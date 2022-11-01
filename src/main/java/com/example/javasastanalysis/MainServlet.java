@@ -107,6 +107,7 @@ public class MainServlet extends HttpServlet {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        classes.put("pmd_class", runnerClass);
+        String classname = program + "_class";
+        classes.put(classname, runnerClass);
     }
 }
