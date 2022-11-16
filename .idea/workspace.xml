@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="JavaSASTAnalysis:war exploded" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Add pmd dependencies" />
+    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Init PMD">
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__jakarta_servlet_jakarta_servlet_api_5_0_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/all-java.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies/PmdRunner.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__javax_servlet_javax_servlet_api_4_0_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/JavaSASTAnalysis.iml" beforeDir="false" afterPath="$PROJECT_DIR$/JavaSASTAnalysis.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/HelloServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/HelloServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/Runner.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -20,26 +37,43 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="LogFilters">
+    <option name="FILTER_ERRORS" value="false" />
+    <option name="FILTER_WARNINGS" value="false" />
+    <option name="FILTER_INFO" value="true" />
+    <option name="FILTER_DEBUG" value="true" />
+    <option name="CUSTOM_FILTER" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2GuVdq662tObfiu2loAEeomx8AL" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="Downloaded.Files.Path.Enabled" value="false" />
+    <property name="Repository.Attach.Annotations" value="false" />
+    <property name="Repository.Attach.JavaDocs" value="false" />
+    <property name="Repository.Attach.Sources" value="false" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/.idea/artifacts" />
-    <property name="project.structure.last.edited" value="Libraries" />
-    <property name="project.structure.proportion" value="0.0" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies" />
+      <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes" />
+      <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/test_dir" />
       <recent name="$PROJECT_DIR$/.idea/artifacts" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -48,20 +82,88 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Tomcat 10.1.1" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.1" ALTERNATIVE_JRE_ENABLED="false">
+    <configuration name="Tomcat 10.1.1" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.1" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="openjdk-19">
+      <option name="OPEN_IN_BROWSER" value="false" />
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/hello-servlet" />
+      <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="JavaSASTAnalysis:war exploded">
           <settings>
-            <option name="CONTEXT_PATH" value="/JavaSASTAnalysis_war_exploded" />
+            <option name="CONTEXT_PATH" value="/" />
           </settings>
         </artifact>
       </deployment>
-      <server-settings />
+      <server-settings>
+        <option name="BASE_DIRECTORY_NAME" value="01bf25ef-ea8f-475e-8df5-3ea1954de01d" />
+      </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
       <predefined_log_file id="Tomcat Manager" />
       <predefined_log_file id="Tomcat Host Manager" />
       <predefined_log_file id="Tomcat Localhost Access" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="59086" />
+      </RunnerSettings>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Debug">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Profile">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Run">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
       <method v="2">
         <option name="Make" enabled="true" />
         <option name="BuildArtifacts" enabled="true">
@@ -79,7 +181,57 @@
       <option name="presentableId" value="Default" />
       <updated>1667238546666</updated>
       <workItem from="1667238548967" duration="364000" />
-      <workItem from="1667238990746" duration="1566000" />
+      <workItem from="1667238990746" duration="5550000" />
+      <workItem from="1667488657132" duration="11000" />
+      <workItem from="1667947991249" duration="375000" />
+      <workItem from="1667948398691" duration="176000" />
+      <workItem from="1667948646277" duration="196000" />
+      <workItem from="1667948942953" duration="355000" />
+      <workItem from="1667949352224" duration="829000" />
+      <workItem from="1667950241741" duration="130000" />
+      <workItem from="1667950404864" duration="1445000" />
+      <workItem from="1667952584115" duration="30000" />
+      <workItem from="1667954264677" duration="366000" />
+      <workItem from="1667954715639" duration="487000" />
+      <workItem from="1667955239539" duration="472000" />
+      <workItem from="1667955868588" duration="377000" />
+      <workItem from="1667956761943" duration="33000" />
+      <workItem from="1667956880992" duration="6000" />
+      <workItem from="1667956902517" duration="58000" />
+      <workItem from="1667957939308" duration="675000" />
+      <workItem from="1668026363897" duration="84000" />
+      <workItem from="1668026490716" duration="34000" />
+      <workItem from="1668026581809" duration="186000" />
+      <workItem from="1668026812852" duration="84000" />
+      <workItem from="1668026923589" duration="111000" />
+      <workItem from="1668027323097" duration="33000" />
+      <workItem from="1668027381678" duration="205000" />
+      <workItem from="1668396153281" duration="3158000" />
+      <workItem from="1668564555836" duration="719000" />
+      <workItem from="1668565556909" duration="12000" />
+      <workItem from="1668565584251" duration="114000" />
+      <workItem from="1668565831117" duration="435000" />
+      <workItem from="1668566434909" duration="108000" />
+      <workItem from="1668566563320" duration="198000" />
+      <workItem from="1668566774109" duration="62000" />
+      <workItem from="1668566873213" duration="1359000" />
+      <workItem from="1668568486777" duration="195000" />
+      <workItem from="1668569045490" duration="1025000" />
+      <workItem from="1668570181732" duration="519000" />
+      <workItem from="1668570731745" duration="207000" />
+      <workItem from="1668570977567" duration="127000" />
+      <workItem from="1668571123768" duration="657000" />
+      <workItem from="1668627052645" duration="271000" />
+      <workItem from="1668627624671" duration="53000" />
+      <workItem from="1668627849261" duration="629000" />
+      <workItem from="1668628506040" duration="6000" />
+      <workItem from="1668628586180" duration="33000" />
+      <workItem from="1668628685604" duration="103000" />
+      <workItem from="1668629175070" duration="50000" />
+      <workItem from="1668629253710" duration="18000" />
+      <workItem from="1668629304003" duration="431000" />
+      <workItem from="1668629785711" duration="460000" />
+      <workItem from="1668630395394" duration="1385000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1667238710500</created>
@@ -109,7 +261,21 @@
       <option name="project" value="LOCAL" />
       <updated>1667245838491</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Another init">
+      <created>1667245960271</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1667245960271</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Init PMD">
+      <created>1667333937280</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1667333937280</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -130,6 +296,29 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Initial commits" />
     <MESSAGE value="Add pmd dependencies" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add pmd dependencies" />
+    <MESSAGE value="Another init" />
+    <MESSAGE value="Init PMD" />
+    <option name="LAST_COMMIT_MESSAGE" value="Init PMD" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java</url>
+          <line>69</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="net.sourceforge.pmd.PmdAnalysis" memberName="ruleSets" />
+      </pinned-members>
+    </pin-to-top-manager>
+    <watches-manager>
+      <configuration name="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory">
+        <watch expression="e" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

@@ -1,13 +1,15 @@
 package com.example.javasastanalysis;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,10 +20,10 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-@WebServlet(name = "webcatServlet", value = "/webcat-servlet")
+@WebServlet(name = "mainServlet", value = "/main-servlet")
 @MultipartConfig
 public class MainServlet extends HttpServlet {
-    static HashMap<String, Class<? extends Runner>> classes;
+    static HashMap<String, Class> classes;
 
     public void init() {
         classes = new HashMap<>();
@@ -46,22 +48,29 @@ public class MainServlet extends HttpServlet {
         if(zipName.length() > 4 && zipName.substring(zipName.length() - 4).compareTo(".zip") != 0) {
             return;
         }
+        Class[] class_arg = new Class[5];
+        class_arg[0] = Part.class;
+        class_arg[1] = Part.class;
+        class_arg[2] = Part.class;
+        class_arg[3] = Part.class;
+        class_arg[4] = String.class;
         Part pmdPart = request.getPart("pmd");
-        File[] toOutput = new File[3];
+        File[] toOutput = new File[1];
         int numFiles = 0;
         if(pmdPart != null) {
             Part pmdClassPath = request.getPart("pmdClassPath");
             if(!classes.containsKey("pmd_class")) {
                 createClassLoader("pmd");
             }
-            Class<? extends Runner> runnerClass = classes.get("pmd_class");
-            File pmdOutputFile = null;
+            Class runnerClass = classes.get("pmd_class");
+            File pmdOutputFile = File.createTempFile("pmdOutput", ".xml");
+            String outputFilePath = pmdOutputFile.getAbsolutePath();
             try {
-                pmdOutputFile = runnerClass.getDeclaredConstructor().newInstance().doProgram(filePart, null, null, pmdClassPath);
+                Constructor pmd_constructor = runnerClass.getDeclaredConstructor(class_arg);
+                pmd_constructor.newInstance(filePart, null, null, null, outputFilePath);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
             }
-            assert pmdOutputFile != null;
             pmdOutputFile.deleteOnExit();
             toOutput[numFiles] = pmdOutputFile;
             numFiles++;
@@ -85,7 +94,7 @@ public class MainServlet extends HttpServlet {
         response.flushBuffer();
     }
 
-    private static void createClassLoader(String program) throws MalformedURLException {
+    private void createClassLoader(String program) throws MalformedURLException {
         String pluginString = "/Users/alexkyer/IdeaProjects/JavaSASTAnalysis/src/main/webapp/WEB-INF/classes/" + program + "_dependencies";
         File[] plugins = new File(pluginString).listFiles(new FileFilter() {
             @Override
@@ -98,12 +107,11 @@ public class MainServlet extends HttpServlet {
         for (File plugin : plugins) {
             urls.add(plugin.toURI().toURL());
         }
-        ClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
-        Class<? extends Runner> runnerClass = null;
+        ClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]), this.getClass().getClassLoader());
+        Class runnerClass = null;
         try {
-            String tempString = program + "Runner";
-            String runnerString = tempString.substring(0, 1).toUpperCase() + tempString.substring(1);
-            runnerClass = (Class<? extends Runner>) loader.loadClass(runnerString);
+            String runnerString = "edu.vt." + program +"runner." + program.substring(0, 1).toUpperCase() + program.substring(1) + "Runner";
+            runnerClass = loader.loadClass(runnerString);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

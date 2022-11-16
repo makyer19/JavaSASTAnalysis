@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
     <servlet>
-        <servlet-name>MainWebapp</servlet-name>
+        <servlet-name>mainServlet</servlet-name>
         <servlet-class>com.example.javasastanalysis.MainServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         <multipart-config>
@@ -15,7 +15,7 @@
         </multipart-config>
     </servlet>
     <servlet-mapping>
-        <servlet-name>MainWebapp</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <servlet-name>mainServlet</servlet-name>
+        <url-pattern>/main-servlet</url-pattern>
     </servlet-mapping>
 </web-app>
