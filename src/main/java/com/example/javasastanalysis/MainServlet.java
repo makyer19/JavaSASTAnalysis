@@ -14,14 +14,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 @WebServlet(name = "mainServlet", value = "/main-servlet")
 @MultipartConfig
+@SuppressWarnings("rawtypes")
 public class MainServlet extends HttpServlet {
     static HashMap<String, Class> classes;
 
@@ -48,50 +53,32 @@ public class MainServlet extends HttpServlet {
         if(zipName.length() > 4 && zipName.substring(zipName.length() - 4).compareTo(".zip") != 0) {
             return;
         }
-        Class[] class_arg = new Class[5];
-        class_arg[0] = Part.class;
-        class_arg[1] = Part.class;
-        class_arg[2] = Part.class;
-        class_arg[3] = Part.class;
-        class_arg[4] = String.class;
+        Class[] classArg = new Class[5];
+        classArg[0] = Part.class;
+        classArg[1] = Part.class;
+        classArg[2] = Part.class;
+        classArg[3] = String.class;
+        classArg[4] = String.class;
         Part pmdPart = request.getPart("pmd");
-        File[] toOutput = new File[1];
+        Part findsecuritybugsPart = request.getPart("findsecuritybugs");
+        Part semgrepPart = request.getPart("semgrep");
+        File[] toOutput = new File[2];
         int numFiles = 0;
+        File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+        zipToTemp(tempDirectory, filePart);
+
         if(pmdPart != null) {
-            Part pmdClassPath = request.getPart("pmdClassPath");
-            if(!classes.containsKey("pmd_class")) {
-                createClassLoader("pmd");
-            }
-            Class runnerClass = classes.get("pmd_class");
-            File pmdOutputFile = File.createTempFile("pmdOutput", ".xml");
-            String outputFilePath = pmdOutputFile.getAbsolutePath();
-            try {
-                Constructor pmd_constructor = runnerClass.getDeclaredConstructor(class_arg);
-                pmd_constructor.newInstance(filePart, null, null, null, outputFilePath);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-            pmdOutputFile.deleteOnExit();
-            toOutput[numFiles] = pmdOutputFile;
+            toOutput[numFiles] = runFromClassLoader("pmd", filePart, tempDirectory, classArg);
             numFiles++;
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream zos = new ZipOutputStream(baos);
-        byte[] bytes = new byte[1024];
-        for(int i = 0; i < numFiles; i++) {
-            String path = toOutput[i].getAbsolutePath();
-            FileInputStream fis = new FileInputStream(path);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            zos.putNextEntry(new ZipEntry(toOutput[i].getName()));
-            int bytesRead;
-            while ((bytesRead = bis.read(bytes)) != -1) {
-                zos.write(bytes, 0, bytesRead);
-            }
-            zos.closeEntry();
+        if(findsecuritybugsPart != null) {
+            toOutput[numFiles] = runFromClassLoader("findsecuritybugs", filePart, tempDirectory, classArg);
+            numFiles++;
         }
-        zos.close();
-        response.getOutputStream().write(baos.toByteArray());
-        response.flushBuffer();
+        //if(semgrepPart != null) {
+            //docker run --platform linux/x86_64 --rm -v "${PWD}:/src" returntocorp/semgrep semgrep --config=auto --junit-xml ~/JavaSastAnalysis/test/testingFiles/PerformanceTest1
+        //}
+        outputZip(numFiles, toOutput, response);
     }
 
     private void createClassLoader(String program) throws MalformedURLException {
@@ -117,5 +104,94 @@ public class MainServlet extends HttpServlet {
         }
         String classname = program + "_class";
         classes.put(classname, runnerClass);
+    }
+
+    private void zipToTemp(File tempDirectory, Part filePart) throws IOException {
+        String tempSrcDirectory = tempDirectory.getAbsolutePath();
+        Files.createDirectories(Paths.get(tempSrcDirectory));
+        for(File file: Objects.requireNonNull(tempDirectory.listFiles())) {
+            boolean check = file.delete();
+            if (!check) {
+                throw new FileNotFoundException();
+            }
+        }
+        try(ZipInputStream zipInputStream = new ZipInputStream(filePart.getInputStream())) {
+            ZipEntry entry = zipInputStream.getNextEntry();
+            OutputStream outputStream;
+            int read;
+            byte[] bytes = new byte[1024];
+            while(entry != null) {
+                String fileName = entry.getName();
+                int isJava = fileName.substring(fileName.length() - 5).compareTo(".java");
+                if(fileName.length() > 5 && (isJava == 0
+                        || fileName.substring(fileName.length() - 6).compareTo(".class") == 0)) {
+                    File newInputFile;
+                    if(isJava == 0) {
+                        newInputFile = File.createTempFile("input", ".java");
+                    }
+                    else {
+                        newInputFile = File.createTempFile("input", ".class");
+                    }
+                    try {
+                        outputStream = new FileOutputStream(newInputFile);
+                        while((read = zipInputStream.read(bytes)) != -1) {
+                            outputStream.write(bytes, 0 , read);
+                        }
+                        newInputFile.deleteOnExit();
+                        if(isJava == 0) {
+                            Files.move(Paths.get(newInputFile.getAbsolutePath()), Paths.get(tempSrcDirectory + "/" + newInputFile.getName()));
+                        }
+                        else {
+                            Files.move(Paths.get(newInputFile.getAbsolutePath()), Paths.get(tempDirectory.getAbsolutePath() + "/" + newInputFile.getName()));
+                        }
+                    }
+                    catch (FileNotFoundException fnfe){
+                        fnfe.printStackTrace();
+                    }
+                }
+                entry = zipInputStream.getNextEntry();
+            }
+            zipInputStream.closeEntry();
+        }
+        catch(IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private File runFromClassLoader(String programName, Part filePart, File tempDirectory, Class[] classArg) throws IOException {
+        if(!classes.containsKey(String.format("%s_class", programName))) {
+            createClassLoader(programName);
+        }
+        Class runnerClass = classes.get(String.format("%s_class", programName));
+        File outputFile = File.createTempFile(String.format("%sOutput", programName), ".xml");
+        String outputFilePath = outputFile.getAbsolutePath();
+        try {
+            Constructor constructor = runnerClass.getDeclaredConstructor(classArg);
+            constructor.newInstance(filePart, null, null, tempDirectory.getAbsolutePath(), outputFilePath);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        outputFile.deleteOnExit();
+        return outputFile;
+    }
+
+    private void outputZip(int numFiles, File[] toOutput, HttpServletResponse response) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(baos);
+        byte[] bytes = new byte[1024];
+        for(int i = 0; i < numFiles; i++) {
+            String path = toOutput[i].getAbsolutePath();
+            FileInputStream fis = new FileInputStream(path);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            zos.putNextEntry(new ZipEntry(toOutput[i].getName()));
+            int bytesRead;
+            while ((bytesRead = bis.read(bytes)) != -1) {
+                zos.write(bytes, 0, bytesRead);
+            }
+            zos.closeEntry();
+        }
+        zos.close();
+        response.getOutputStream().write(baos.toByteArray());
+        response.flushBuffer();
     }
 }
