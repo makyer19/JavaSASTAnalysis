@@ -9,43 +9,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Working PMD Implementation">
-      <change afterPath="$PROJECT_DIR$/include.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/FindsecuritybugsRunner.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/Saxon-HE-11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/asm-9.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/asm-analysis-9.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/asm-commons-9.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/asm-tree-9.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/asm-util-9.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/bcel-6.5.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/commons-codec-1.15.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/commons-lang3-3.12.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/commons-text-1.10.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/config/log4j2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/dom4j-2.1.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/findsecbugs-plugin-1.12.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/gson-2.9.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/httpclient5-5.1.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/httpcore5-5.1.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/httpcore5-h2-5.1.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/jaxen-1.2.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/jcip-annotations-1.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/jsr305-3.0.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/log4j-api-2.19.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/log4j-core-2.19.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/log4j-slf4j2-impl-2.19.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/slf4j-api-2.0.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/spotbugs-annotations.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/spotbugs-ant.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/spotbugs.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/xml-apis-1.4.01.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/xmlresolver-4.4.3-data.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/xmlresolver-4.4.3.jar" afterDir="false" />
+    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Refactor code and FindSecurityBugs integration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/JavaSASTAnalysis.iml" beforeDir="false" afterPath="$PROJECT_DIR$/JavaSASTAnalysis.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies/PmdRunner.jar" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies/PmdRunner.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -278,7 +244,8 @@
       <workItem from="1674077612125" duration="314000" />
       <workItem from="1674147787971" duration="602000" />
       <workItem from="1674243708417" duration="2000" />
-      <workItem from="1674857886202" duration="1279000" />
+      <workItem from="1674857886202" duration="3088000" />
+      <workItem from="1674919927190" duration="3072000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1667238710500</created>
@@ -329,7 +296,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668631821145</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Refactor code and FindSecurityBugs integration">
+      <created>1674859202362</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1674859202362</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -353,7 +327,8 @@
     <MESSAGE value="Another init" />
     <MESSAGE value="Init PMD" />
     <MESSAGE value="Working PMD Implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Working PMD Implementation" />
+    <MESSAGE value="Refactor code and FindSecurityBugs integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor code and FindSecurityBugs integration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -362,6 +337,16 @@
           <url>jar://$PROJECT_DIR$/../FindSecurityBugsRunner/out/artifacts/FindsecuritybugsRunner_jar/FindSecurityBugsRunner.jar!/edu/vt/findsecuritybugsrunner/FindsecuritybugsRunner.class</url>
           <line>119</line>
           <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java</url>
+          <line>96</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java</url>
+          <line>70</line>
+          <option name="timeStamp" value="36" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

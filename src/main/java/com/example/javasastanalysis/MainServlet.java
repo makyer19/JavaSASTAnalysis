@@ -29,6 +29,7 @@ import java.util.zip.ZipOutputStream;
 @SuppressWarnings("rawtypes")
 public class MainServlet extends HttpServlet {
     static HashMap<String, Class> classes;
+    private static final Object processLock = new Object();
 
     public void init() {
         classes = new HashMap<>();
@@ -62,7 +63,7 @@ public class MainServlet extends HttpServlet {
         Part pmdPart = request.getPart("pmd");
         Part findsecuritybugsPart = request.getPart("findsecuritybugs");
         Part semgrepPart = request.getPart("semgrep");
-        File[] toOutput = new File[2];
+        File[] toOutput = new File[3];
         int numFiles = 0;
         File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
         zipToTemp(tempDirectory, filePart);
@@ -75,9 +76,24 @@ public class MainServlet extends HttpServlet {
             toOutput[numFiles] = runFromClassLoader("findsecuritybugs", filePart, tempDirectory, classArg);
             numFiles++;
         }
-        //if(semgrepPart != null) {
-            //docker run --platform linux/x86_64 --rm -v "${PWD}:/src" returntocorp/semgrep semgrep --config=auto --junit-xml ~/JavaSastAnalysis/test/testingFiles/PerformanceTest1
-        //}
+        if(semgrepPart != null) {
+            File outputFile = File.createTempFile("semgrepOutput", ".xml");
+            String tempSrcDirectory = tempDirectory.getAbsolutePath();
+            String workingDir = System.getProperty("user.dir");
+            String[] dockerCommand = {"docker", "run", "--platform", "linux/x86_64", "--rm", "-v",
+                                      String.format("%s:/src", workingDir), "returntocorp/semgrep",
+                                      "semgrep", "--config=auto", "--junit-xml", tempSrcDirectory};
+            try {
+                synchronized (processLock) {
+                    Process process = new ProcessBuilder(dockerCommand).redirectOutput(outputFile).start();
+                    process.waitFor();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            toOutput[numFiles] = outputFile;
+            numFiles++;
+        }
         outputZip(numFiles, toOutput, response);
     }
 
