@@ -63,7 +63,8 @@ public class MainServlet extends HttpServlet {
         Part pmdPart = request.getPart("pmd");
         Part findsecuritybugsPart = request.getPart("findsecuritybugs");
         Part semgrepPart = request.getPart("semgrep");
-        File[] toOutput = new File[3];
+        Part yascaPart = request.getPart("yasca");
+        File[] toOutput = new File[4];
         int numFiles = 0;
         File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
         zipToTemp(tempDirectory, filePart);
@@ -94,23 +95,46 @@ public class MainServlet extends HttpServlet {
             toOutput[numFiles] = outputFile;
             numFiles++;
         }
+        if(yascaPart != null) {
+            File outputFile = File.createTempFile("yascaOutput", ".html");
+            String containerName = "yascaContainer";
+            String tempSrcDirectory = tempDirectory.getAbsolutePath();
+            String outputMountString = String.format("type=bind,source=%s,target=/app/report.html", outputFile.getAbsolutePath());
+            String scanMountString = String.format("%s:/app/toScan", tempSrcDirectory);
+            String[] dockerRunCommand = {"docker", "run", "-dit", "--name", containerName, "--mount", outputMountString, "-v", scanMountString, "makyer19/yasca:v1"};
+            String[] dockerExecCommand = {"docker", "exec", containerName, "./yasca.sh", "--onlyPlugins,BuiltIn", "--extensionsOnly,java", "/app/toScan"};
+            String[] dockerKillCommand = {"docker", "kill", containerName};
+            String[] dockerRemoveCommand = {"docker", "rm", containerName};
+            try {
+                synchronized (processLock) {
+                    Process runDocker = new ProcessBuilder(dockerRunCommand).start();
+                    runDocker.waitFor();
+                    Process execDocker = new ProcessBuilder(dockerExecCommand).start();
+                    execDocker.waitFor();
+                    Process killDocker = new ProcessBuilder(dockerKillCommand).start();
+                    killDocker.waitFor();
+                    Process removeDocker = new ProcessBuilder(dockerRemoveCommand).start();
+                    removeDocker.waitFor();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            toOutput[numFiles] = outputFile;
+            numFiles++;
+        }
         outputZip(numFiles, toOutput, response);
     }
 
     private void createClassLoader(String program) throws MalformedURLException {
         String pluginString = "/Users/alexkyer/IdeaProjects/JavaSASTAnalysis/src/main/webapp/WEB-INF/classes/" + program + "_dependencies";
-        File[] plugins = new File(pluginString).listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.getName().endsWith(".jar");
-            }
-        });
+        File[] plugins = new File(pluginString).listFiles(file -> file.getName().endsWith(".jar"));
         assert plugins != null;
         List<URL> urls = new ArrayList<>(plugins.length);
         for (File plugin : plugins) {
             urls.add(plugin.toURI().toURL());
         }
-        ClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]), this.getClass().getClassLoader());
+        URL[] tempUrls = new URL[urls.size()];
+        ClassLoader loader = new URLClassLoader(urls.toArray(tempUrls), this.getClass().getClassLoader());
         Class runnerClass = null;
         try {
             String runnerString = "edu.vt." + program +"runner." + program.substring(0, 1).toUpperCase() + program.substring(1) + "Runner";
@@ -174,6 +198,7 @@ public class MainServlet extends HttpServlet {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private File runFromClassLoader(String programName, Part filePart, File tempDirectory, Class[] classArg) throws IOException {
         if(!classes.containsKey(String.format("%s_class", programName))) {
             createClassLoader(programName);
