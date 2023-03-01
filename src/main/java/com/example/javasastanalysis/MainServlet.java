@@ -10,7 +10,6 @@ import jakarta.servlet.http.Part;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -80,10 +79,7 @@ public class MainServlet extends HttpServlet {
         if(semgrepPart != null) {
             File outputFile = File.createTempFile("semgrepOutput", ".xml");
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String workingDir = System.getProperty("user.dir");
-            String[] dockerCommand = {"docker", "run", "--platform", "linux/x86_64", "--rm", "-v",
-                                      String.format("%s:/src", workingDir), "returntocorp/semgrep",
-                                      "semgrep", "--config=auto", "--junit-xml", tempSrcDirectory};
+            String[] dockerCommand = {"semgrep", "--config=auto", "--junit-xml", "--include=*.java", "--dryrun", tempSrcDirectory};
             try {
                 synchronized (processLock) {
                     Process process = new ProcessBuilder(dockerCommand).redirectOutput(outputFile).start();
@@ -198,7 +194,8 @@ public class MainServlet extends HttpServlet {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    //@SuppressWarnings("unchecked")
+    @SuppressWarnings("all")
     private File runFromClassLoader(String programName, Part filePart, File tempDirectory, Class[] classArg) throws IOException {
         if(!classes.containsKey(String.format("%s_class", programName))) {
             createClassLoader(programName);
@@ -209,7 +206,7 @@ public class MainServlet extends HttpServlet {
         try {
             Constructor constructor = runnerClass.getDeclaredConstructor(classArg);
             constructor.newInstance(filePart, null, null, tempDirectory.getAbsolutePath(), outputFilePath);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         outputFile.deleteOnExit();

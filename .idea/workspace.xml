@@ -9,9 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Refactor code and FindSecurityBugs integration">
+    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Add yasca integration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -245,7 +246,28 @@
       <workItem from="1674147787971" duration="602000" />
       <workItem from="1674243708417" duration="2000" />
       <workItem from="1674857886202" duration="3088000" />
-      <workItem from="1674919927190" duration="3072000" />
+      <workItem from="1674919927190" duration="3337000" />
+      <workItem from="1674924142198" duration="99000" />
+      <workItem from="1675283039300" duration="972000" />
+      <workItem from="1675357403472" duration="135000" />
+      <workItem from="1675715192261" duration="2001000" />
+      <workItem from="1675794488543" duration="601000" />
+      <workItem from="1675798600542" duration="289000" />
+      <workItem from="1675874090863" duration="605000" />
+      <workItem from="1676331470301" duration="366000" />
+      <workItem from="1676389784467" duration="6836000" />
+      <workItem from="1676492319584" duration="1481000" />
+      <workItem from="1676940334170" duration="390000" />
+      <workItem from="1676940738241" duration="443000" />
+      <workItem from="1676941186160" duration="599000" />
+      <workItem from="1676949355561" duration="983000" />
+      <workItem from="1677346205548" duration="324000" />
+      <workItem from="1677515058227" duration="7025000" />
+      <workItem from="1677524750342" duration="300000" />
+      <workItem from="1677525083919" duration="949000" />
+      <workItem from="1677526609288" duration="723000" />
+      <workItem from="1677527558004" duration="2162000" />
+      <workItem from="1677702544850" duration="140000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1667238710500</created>
@@ -303,7 +325,21 @@
       <option name="project" value="LOCAL" />
       <updated>1674859202362</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Add semgrep integration">
+      <created>1674923267942</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1674923267942</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Add yasca integration">
+      <created>1676492337464</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1676492337464</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -328,7 +364,9 @@
     <MESSAGE value="Init PMD" />
     <MESSAGE value="Working PMD Implementation" />
     <MESSAGE value="Refactor code and FindSecurityBugs integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor code and FindSecurityBugs integration" />
+    <MESSAGE value="Add semgrep integration" />
+    <MESSAGE value="Add yasca integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add yasca integration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -339,14 +377,14 @@
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java</url>
-          <line>96</line>
-          <option name="timeStamp" value="35" />
+          <url>jar://$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/FindsecuritybugsRunner.jar!/edu/vt/findsecuritybugsrunner/FindsecuritybugsRunner.class</url>
+          <line>55</line>
+          <option name="timeStamp" value="46" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java</url>
-          <line>70</line>
-          <option name="timeStamp" value="36" />
+          <url>jar://$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/FindsecuritybugsRunner.jar!/edu/umd/cs/findbugs/FindBugs2.class</url>
+          <line>207</line>
+          <option name="timeStamp" value="48" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

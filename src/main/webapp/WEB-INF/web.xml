@@ -9,9 +9,9 @@
         <load-on-startup>1</load-on-startup>
         <multipart-config>
             <!-- enter your values -->
-            <max-file-size>123456</max-file-size>
-            <max-request-size>123456</max-request-size>
-            <file-size-threshold>123456</file-size-threshold>
+            <max-file-size>209715200</max-file-size>
+            <max-request-size>209715200</max-request-size>
+            <file-size-threshold>209715200</file-size-threshold>
         </multipart-config>
     </servlet>
     <servlet-mapping>
