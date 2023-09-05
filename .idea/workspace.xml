@@ -9,10 +9,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Add yasca integration">
+    <list default="true" id="04705adf-e734-41b3-af78-6e2db639d4a4" name="Changes" comment="Change gitignore">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/JavaSASTAnalysis.iml" beforeDir="false" afterPath="$PROJECT_DIR$/JavaSASTAnalysis.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/javasastanalysis/MainServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/FindsecuritybugsRunner.jar" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies/FindsecuritybugsRunner.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,20 +57,21 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies" />
       <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies" />
+      <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/pmd_dependencies" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes" />
       <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/test_dir" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes/findsecuritybugs_dependencies" />
       <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF/classes" />
       <recent name="$PROJECT_DIR$/src/main/webapp/WEB-INF" />
     </key>
@@ -267,7 +269,37 @@
       <workItem from="1677525083919" duration="949000" />
       <workItem from="1677526609288" duration="723000" />
       <workItem from="1677527558004" duration="2162000" />
-      <workItem from="1677702544850" duration="140000" />
+      <workItem from="1677702544850" duration="1607000" />
+      <workItem from="1677773729024" duration="3000" />
+      <workItem from="1678811232842" duration="643000" />
+      <workItem from="1679248384733" duration="187000" />
+      <workItem from="1679248577704" duration="167000" />
+      <workItem from="1679249759954" duration="1791000" />
+      <workItem from="1679259896510" duration="2029000" />
+      <workItem from="1679845803932" duration="601000" />
+      <workItem from="1680285296002" duration="1284000" />
+      <workItem from="1680286993750" duration="461000" />
+      <workItem from="1680287478346" duration="86000" />
+      <workItem from="1680288455095" duration="98000" />
+      <workItem from="1680288716478" duration="202000" />
+      <workItem from="1680289193365" duration="150000" />
+      <workItem from="1680289472618" duration="50000" />
+      <workItem from="1680289573745" duration="23000" />
+      <workItem from="1680289610733" duration="42000" />
+      <workItem from="1680289902841" duration="499000" />
+      <workItem from="1680290676771" duration="791000" />
+      <workItem from="1681095574602" duration="2292000" />
+      <workItem from="1681156928791" duration="1198000" />
+      <workItem from="1681838064164" duration="617000" />
+      <workItem from="1681940363302" duration="707000" />
+      <workItem from="1692621609840" duration="2000" />
+      <workItem from="1692721854560" duration="2055000" />
+      <workItem from="1693491660392" duration="58000" />
+      <workItem from="1693492248317" duration="5133000" />
+      <workItem from="1693506790205" duration="663000" />
+      <workItem from="1693510864161" duration="208000" />
+      <workItem from="1693511539170" duration="598000" />
+      <workItem from="1693922175001" duration="5714000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1667238710500</created>
@@ -339,7 +371,21 @@
       <option name="project" value="LOCAL" />
       <updated>1676492337464</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Alter semgrep command. Fix some warnings. Make FindSecBugs try/catch generic as to also include IOException for when the given file is not compiled">
+      <created>1677702768137</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1677702768137</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Change gitignore">
+      <created>1679248542859</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1679248542859</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -366,7 +412,9 @@
     <MESSAGE value="Refactor code and FindSecurityBugs integration" />
     <MESSAGE value="Add semgrep integration" />
     <MESSAGE value="Add yasca integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add yasca integration" />
+    <MESSAGE value="Alter semgrep command. Fix some warnings. Make FindSecBugs try/catch generic as to also include IOException for when the given file is not compiled" />
+    <MESSAGE value="Change gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="Change gitignore" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

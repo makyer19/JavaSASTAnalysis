@@ -63,7 +63,8 @@ public class MainServlet extends HttpServlet {
         Part findsecuritybugsPart = request.getPart("findsecuritybugs");
         Part semgrepPart = request.getPart("semgrep");
         Part yascaPart = request.getPart("yasca");
-        File[] toOutput = new File[4];
+        Part sonarqubePart = request.getPart("sonarqube");
+        File[] toOutput = new File[5];
         int numFiles = 0;
         File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
         zipToTemp(tempDirectory, filePart);
@@ -118,6 +119,29 @@ public class MainServlet extends HttpServlet {
             toOutput[numFiles] = outputFile;
             numFiles++;
         }
+        if(sonarqubePart != null) {
+            File outputFile = File.createTempFile("sonarqubeOutput", ".json");
+            String tempSrcDirectory = tempDirectory.getAbsolutePath();
+            String smallerSrcDir = tempSrcDirectory.substring(0, tempSrcDirectory.lastIndexOf("/"));
+            BufferedWriter sonarWriter = new BufferedWriter(new FileWriter(smallerSrcDir + "/sonar-project.properties"));
+            sonarWriter.write("sonar.projectKey=jwave-test\nsonar.sources=./temp\n");
+            sonarWriter.close();
+            String scanMountString = String.format("%s:/usr/src", smallerSrcDir);
+            String[] dockerRunCommand = {"docker", "run", "--network=host", "-e", "SONAR_HOST_URL=http://localhost:9000", "-e", "SONAR_SCANNER_OPTS=-Dsonar.projectKey=jwave-test -Dsonar.java.binaries=.", "-e", "SONAR_TOKEN=sqp_ee7f54c8cefeec63c6c267b548049572f0cfd5a2", "-v", scanMountString, "sonarsource/sonar-scanner-cli"};
+            String[] sonarCurlCommand = {"curl", "-u", "admin:jwave_admin", "\"http://localhost:9000/api/issues/search?types=BUG\""};
+            try {
+                synchronized (processLock) {
+                    Process runDocker = new ProcessBuilder(dockerRunCommand).start();
+                    runDocker.waitFor();
+                    Process sonarCurlProcess = new ProcessBuilder(sonarCurlCommand).redirectOutput(outputFile).start();
+                    sonarCurlProcess.waitFor();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            toOutput[numFiles] = outputFile;
+            numFiles++;
+        }
         outputZip(numFiles, toOutput, response);
     }
 
@@ -143,6 +167,7 @@ public class MainServlet extends HttpServlet {
     }
 
     private void zipToTemp(File tempDirectory, Part filePart) throws IOException {
+        int count = 0;
         String tempSrcDirectory = tempDirectory.getAbsolutePath();
         Files.createDirectories(Paths.get(tempSrcDirectory));
         for(File file: Objects.requireNonNull(tempDirectory.listFiles())) {
@@ -161,6 +186,7 @@ public class MainServlet extends HttpServlet {
                 int isJava = fileName.substring(fileName.length() - 5).compareTo(".java");
                 if(fileName.length() > 5 && (isJava == 0
                         || fileName.substring(fileName.length() - 6).compareTo(".class") == 0)) {
+                    count = count + 1;
                     File newInputFile;
                     if(isJava == 0) {
                         newInputFile = File.createTempFile("input", ".java");
@@ -192,6 +218,7 @@ public class MainServlet extends HttpServlet {
         catch(IOException e) {
             System.out.println(e.getMessage());
         }
+        System.out.println(count);
     }
 
     //@SuppressWarnings("unchecked")
