@@ -10,15 +10,11 @@ import jakarta.servlet.http.Part;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -32,11 +28,6 @@ public class MainServlet extends HttpServlet {
 
     public void init() {
         classes = new HashMap<>();
-        String dataDir = System.getProperty("user.dir") + "/data";
-        boolean check = new File(dataDir).mkdirs();
-        if(!check) {
-            System.out.print("Directory already created");
-        }
     }
 
     public MainServlet() {
@@ -80,7 +71,14 @@ public class MainServlet extends HttpServlet {
         if(semgrepPart != null) {
             File outputFile = File.createTempFile("semgrepOutput", ".xml");
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String[] dockerCommand = {"semgrep", "--config=auto", "--junit-xml", "--include=*.java", "--dryrun", tempSrcDirectory};
+            String[] dockerCommand = {
+                    "semgrep",
+                    "--config=auto",
+                    "--junit-xml",
+                    "--include=*.java",
+                    "--dryrun",
+                    tempSrcDirectory
+            };
             try {
                 synchronized (processLock) {
                     Process process = new ProcessBuilder(dockerCommand).redirectOutput(outputFile).start();
@@ -96,22 +94,45 @@ public class MainServlet extends HttpServlet {
             File outputFile = File.createTempFile("yascaOutput", ".html");
             String containerName = "yascaContainer";
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String outputMountString = String.format("type=bind,source=%s,target=/app/report.html", outputFile.getAbsolutePath());
+            String outputMountString = String.format(
+                    "type=bind,source=%s,target=/app/report.html",
+                    outputFile.getAbsolutePath()
+            );
             String scanMountString = String.format("%s:/app/toScan", tempSrcDirectory);
-            String[] dockerRunCommand = {"docker", "run", "-dit", "--name", containerName, "--mount", outputMountString, "-v", scanMountString, "makyer19/yasca:v1"};
-            String[] dockerExecCommand = {"docker", "exec", containerName, "./yasca.sh", "--onlyPlugins,BuiltIn", "--extensionsOnly,java", "/app/toScan"};
-            String[] dockerKillCommand = {"docker", "kill", containerName};
-            String[] dockerRemoveCommand = {"docker", "rm", containerName};
+            String[] dockerRunCommand = {
+                    "docker",
+                    "run",
+                    "-dit",
+                    "--rm",
+                    "--name",
+                    containerName,
+                    "--mount",
+                    outputMountString,
+                    "-v",
+                    scanMountString,
+                    "makyer19/yasca:v1"
+            };
+            String[] dockerExecCommand = {
+                    "docker",
+                    "exec",
+                    containerName,
+                    "./yasca.sh",
+                    "--onlyPlugins,BuiltIn",
+                    "--extensionsOnly,java",
+                    "/app/toScan"
+            };
+            //String[] dockerKillCommand = {"docker", "kill", containerName};
+            //String[] dockerRemoveCommand = {"docker", "rm", containerName};
             try {
                 synchronized (processLock) {
                     Process runDocker = new ProcessBuilder(dockerRunCommand).start();
                     runDocker.waitFor();
                     Process execDocker = new ProcessBuilder(dockerExecCommand).start();
                     execDocker.waitFor();
-                    Process killDocker = new ProcessBuilder(dockerKillCommand).start();
-                    killDocker.waitFor();
-                    Process removeDocker = new ProcessBuilder(dockerRemoveCommand).start();
-                    removeDocker.waitFor();
+//                    Process killDocker = new ProcessBuilder(dockerKillCommand).start();
+//                    killDocker.waitFor();
+//                    Process removeDocker = new ProcessBuilder(dockerRemoveCommand).start();
+//                    removeDocker.waitFor();
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -122,16 +143,48 @@ public class MainServlet extends HttpServlet {
         if(sonarqubePart != null) {
             File outputFile = File.createTempFile("sonarqubeOutput", ".json");
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String smallerSrcDir = tempSrcDirectory.substring(0, tempSrcDirectory.lastIndexOf("/"));
-            BufferedWriter sonarWriter = new BufferedWriter(new FileWriter(smallerSrcDir + "/sonar-project.properties"));
+            String smallerSrcDir = tempSrcDirectory.substring(
+                    0,
+                    tempSrcDirectory.lastIndexOf(System.getProperty("file.separator"))
+            );
+            BufferedWriter sonarWriter = new BufferedWriter(new FileWriter(
+                    smallerSrcDir +
+                            System.getProperty("file.separator") +
+                            "sonar-project.properties"
+            ));
             sonarWriter.write("sonar.projectKey=jwave-test\nsonar.sources=./temp\n");
             sonarWriter.close();
             String scanMountString = String.format("%s:/usr/src", smallerSrcDir);
-            String[] dockerRunCommand = {"docker", "run", "--network=host", "-e", "SONAR_HOST_URL=http://localhost:9000", "-e", "SONAR_SCANNER_OPTS=-Dsonar.projectKey=jwave-test -Dsonar.java.binaries=.", "-e", "SONAR_TOKEN=sqp_ee7f54c8cefeec63c6c267b548049572f0cfd5a2", "-v", scanMountString, "sonarsource/sonar-scanner-cli"};
-            String[] sonarCurlCommand = {"curl", "-u", "admin:jwave_admin", "\"http://localhost:9000/api/issues/search?types=BUG\""};
+            String[] dockerRunCommand = {
+                    "docker",
+                    "run",
+                    "--network=host",
+                    "--rm",
+                    "-e",
+                    "SONAR_HOST_URL=http://localhost:9000",
+                    "-e",
+                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=jwave-test -Dsonar.java.binaries=.",
+                    "-e",
+                    "SONAR_TOKEN=sqp_0f6bfcff3568814c33d517060106ca8419102310",
+                    "-v",
+                    scanMountString,
+                    "sonarsource/sonar-scanner-cli"
+            };
+            String[] sonarCurlCommand = {
+                    "curl",
+                    "-u",
+                    "admin:jwave_admin",
+                    "http://localhost:9000/api/issues/search?types=VULNERABILITY"
+            };
             try {
                 synchronized (processLock) {
-                    Process runDocker = new ProcessBuilder(dockerRunCommand).start();
+                    ProcessBuilder pb = new ProcessBuilder(dockerRunCommand);
+                    pb.redirectErrorStream(true);
+                    Process runDocker = pb.start();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(runDocker.getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null)
+                        System.out.println("SonarQube Docker: " + line);
                     runDocker.waitFor();
                     Process sonarCurlProcess = new ProcessBuilder(sonarCurlCommand).redirectOutput(outputFile).start();
                     sonarCurlProcess.waitFor();
@@ -145,8 +198,22 @@ public class MainServlet extends HttpServlet {
         outputZip(numFiles, toOutput, response);
     }
 
-    private void createClassLoader(String program) throws MalformedURLException {
-        String pluginString = "/Users/alexkyer/IdeaProjects/JavaSASTAnalysis/src/main/webapp/WEB-INF/classes/" + program + "_dependencies";
+    private void createClassLoader(String program) throws IOException {
+        String targetString = getServletContext().getRealPath(System.getProperty("file.separator"));
+        targetString = targetString.substring(0, targetString.indexOf("JavaSASTAnalysis"));
+        String pluginString = targetString + String.join(
+                System.getProperty("file.separator"),
+                Arrays.asList(
+                        "JavaSASTAnalysis",
+                        "src",
+                        "main",
+                        "webapp",
+                        "WEB-INF",
+                        "classes",
+                        program + "_dependencies"
+                )
+        );
+        System.out.println(pluginString);
         File[] plugins = new File(pluginString).listFiles(file -> file.getName().endsWith(".jar"));
         assert plugins != null;
         List<URL> urls = new ArrayList<>(plugins.length);
@@ -157,7 +224,12 @@ public class MainServlet extends HttpServlet {
         ClassLoader loader = new URLClassLoader(urls.toArray(tempUrls), this.getClass().getClassLoader());
         Class runnerClass = null;
         try {
-            String runnerString = "edu.vt." + program +"runner." + program.substring(0, 1).toUpperCase() + program.substring(1) + "Runner";
+            String runnerString = "edu.vt." +
+                    program +
+                    "runner." +
+                    program.substring(0, 1).toUpperCase() +
+                    program.substring(1) +
+                    "Runner";
             runnerClass = loader.loadClass(runnerString);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -201,10 +273,20 @@ public class MainServlet extends HttpServlet {
                         }
                         newInputFile.deleteOnExit();
                         if(isJava == 0) {
-                            Files.move(Paths.get(newInputFile.getAbsolutePath()), Paths.get(tempSrcDirectory + "/" + newInputFile.getName()));
+                            Files.move(
+                                    Paths.get(newInputFile.getAbsolutePath()),
+                                    Paths.get(tempSrcDirectory +
+                                            System.getProperty("file.separator") +
+                                            newInputFile.getName())
+                            );
                         }
                         else {
-                            Files.move(Paths.get(newInputFile.getAbsolutePath()), Paths.get(tempDirectory.getAbsolutePath() + "/" + newInputFile.getName()));
+                            Files.move(Paths.get(
+                                    newInputFile.getAbsolutePath()),
+                                    Paths.get(tempDirectory.getAbsolutePath() +
+                                            System.getProperty("file.separator") +
+                                            newInputFile.getName())
+                            );
                         }
                     }
                     catch (FileNotFoundException fnfe){
@@ -223,7 +305,12 @@ public class MainServlet extends HttpServlet {
 
     //@SuppressWarnings("unchecked")
     @SuppressWarnings("all")
-    private File runFromClassLoader(String programName, Part filePart, File tempDirectory, Class[] classArg) throws IOException {
+    private File runFromClassLoader(
+            String programName,
+            Part filePart,
+            File tempDirectory,
+            Class[] classArg
+    ) throws IOException {
         if(!classes.containsKey(String.format("%s_class", programName))) {
             createClassLoader(programName);
         }
