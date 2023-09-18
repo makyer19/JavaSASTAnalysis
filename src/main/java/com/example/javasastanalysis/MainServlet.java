@@ -204,7 +204,10 @@ public class MainServlet extends HttpServlet {
         String pluginString = targetString + String.join(
                 System.getProperty("file.separator"),
                 Arrays.asList(
-                        "JavaSASTAnalysis-1.0-SNAPSHOT",
+                        "JavaSASTAnalysis",
+                        "src",
+                        "main",
+                        "webapp",
                         "WEB-INF",
                         "classes",
                         program + "_dependencies"
