@@ -44,12 +44,9 @@ public class MainServlet extends HttpServlet {
         if(zipName.length() > 4 && zipName.substring(zipName.length() - 4).compareTo(".zip") != 0) {
             return;
         }
-        Class[] classArg = new Class[5];
-        classArg[0] = Part.class;
-        classArg[1] = Part.class;
-        classArg[2] = Part.class;
-        classArg[3] = String.class;
-        classArg[4] = String.class;
+        Class[] classArg = new Class[2];
+        classArg[0] = String.class;
+        classArg[1] = String.class;
         Part pmdPart = request.getPart("pmd");
         Part findsecuritybugsPart = request.getPart("findsecuritybugs");
         Part semgrepPart = request.getPart("semgrep");
@@ -319,7 +316,7 @@ public class MainServlet extends HttpServlet {
         String outputFilePath = outputFile.getAbsolutePath();
         try {
             Constructor constructor = runnerClass.getDeclaredConstructor(classArg);
-            constructor.newInstance(filePart, null, null, tempDirectory.getAbsolutePath(), outputFilePath);
+            constructor.newInstance(tempDirectory.getAbsolutePath(), outputFilePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
