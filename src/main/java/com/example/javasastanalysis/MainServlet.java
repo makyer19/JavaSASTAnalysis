@@ -88,50 +88,39 @@ public class MainServlet extends HttpServlet {
             numFiles++;
         }
         if(yascaPart != null) {
+            System.out.println("Starting Yasca");
             File outputFile = File.createTempFile("yascaOutput", ".html");
             String containerName = "yascaContainer";
-            String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String outputMountString = String.format(
-                    "type=bind,source=%s,target=/app/report.html",
-                    outputFile.getAbsolutePath()
-            );
-            String scanMountString = String.format("%s:/app/toScan", tempSrcDirectory);
+            System.out.println("Strings were created");
             String[] dockerRunCommand = {
                     "docker",
                     "run",
-                    "-dit",
                     "--rm",
+                    "-dit",
                     "--name",
                     containerName,
-                    "--mount",
-                    outputMountString,
                     "-v",
-                    scanMountString,
-                    "makyer19/yasca:v1"
+                    "scan-dir:/app/toScan",
+                    "makyer19/yasca:jsa"
             };
-            String[] dockerExecCommand = {
-                    "docker",
-                    "exec",
-                    containerName,
-                    "./yasca.sh",
-                    "--onlyPlugins,BuiltIn",
-                    "--extensionsOnly,java",
-                    "/app/toScan"
+            String[] copyCommand = {
+                    "cp",
+                    "/usr/local/tomcat/temp/report.html",
+                    "/usr/local/tomcat/temp/" + outputFile.getName()
             };
-            //String[] dockerKillCommand = {"docker", "kill", containerName};
-            //String[] dockerRemoveCommand = {"docker", "rm", containerName};
+            System.out.println("Docker run command : " + Arrays.toString(dockerRunCommand));
             try {
                 synchronized (processLock) {
+                    System.out.println("Running Docker");
                     Process runDocker = new ProcessBuilder(dockerRunCommand).start();
                     runDocker.waitFor();
-                    Process execDocker = new ProcessBuilder(dockerExecCommand).start();
-                    execDocker.waitFor();
-//                    Process killDocker = new ProcessBuilder(dockerKillCommand).start();
-//                    killDocker.waitFor();
-//                    Process removeDocker = new ProcessBuilder(dockerRemoveCommand).start();
-//                    removeDocker.waitFor();
+                    Thread.sleep(60000);
+                    System.out.println("Copy File");
+                    Process copyDocker = new ProcessBuilder(copyCommand).start();
+                    copyDocker.waitFor();
                 }
             } catch (InterruptedException e) {
+                System.out.println("Error");
                 e.printStackTrace();
             }
             toOutput[numFiles] = outputFile;
