@@ -114,7 +114,28 @@ public class MainServlet extends HttpServlet {
                     System.out.println("Running Docker");
                     Process runDocker = new ProcessBuilder(dockerRunCommand).start();
                     runDocker.waitFor();
-                    Thread.sleep(60000);
+                    while(true) {
+                        String[] dockerPsCommand = {
+                                "docker",
+                                "ps",
+                                "-a"
+                        };
+                        ProcessBuilder psBuilder = new ProcessBuilder(dockerPsCommand);
+                        BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(psBuilder.start().getInputStream())
+                        );
+                        StringBuilder builder = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            builder.append(line);
+                            builder.append(System.getProperty("line.separator"));
+                        }
+                        String result = builder.toString();
+                        System.out.println("Docker PS result is: " + result);
+                        if (!result.contains(containerName)) {
+                            break;
+                        }
+                    }
                     System.out.println("Copy File");
                     Process copyDocker = new ProcessBuilder(copyCommand).start();
                     copyDocker.waitFor();
