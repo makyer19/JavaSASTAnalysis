@@ -1,0 +1,27 @@
+version: "3"
+services:
+  sonarqube:
+    image: sonarqube:latest
+    restart: unless-stopped
+    environment:
+      - SONARQUBE_JDBC_USERNAME=sonarqube
+      - SONARQUBE_JDBC_PASSWORD=sonarpass
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonarqube
+    ports:
+      - "9000:9000"
+      - "9092:9092"
+    volumes:
+      - ./volumes/sonarqubeVolume/conf:/opt/sonarqube/conf
+      - ./volumes/sonarqubeVolume/data:/opt/sonarqube/data
+      - ./volumes/sonarqubeVolume/extensions:/opt/sonarqube/extensions
+      - ./volumes/sonarqubeVolume/lib/bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+  db:
+    image: makyer19/sonar-postgresql:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sonarqube
+      - POSTGRES_PASSWORD=sonarpass
+      - POSTGRES_DB=sonarqube
+    volumes:
+      - ./volumes/postgresVolume:/var/lib/postgresql
+      - ./volumes/postgresVolume/data:/var/lib/postgresql/data
