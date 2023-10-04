@@ -1,5 +1,12 @@
 version: "3"
 services:
+  javasastanalysis:
+    image: makyer19/javasastanalysis
+    ports:
+      - "8080:8080"
+    volumes:
+      - scan-dir:/usr/local/tomcat/temp
+      - //var/run/docker.sock:/var/run/docker.sock
   sonarqube:
     image: sonarqube:latest
     restart: unless-stopped
@@ -25,3 +32,5 @@ services:
     volumes:
       - ./volumes/postgresVolume:/var/lib/postgresql
       - ./volumes/postgresVolume/data:/var/lib/postgresql/data
+volumes:
+  scan-dir:

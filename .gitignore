@@ -2,3 +2,5 @@
 target
 JavaSASTAnalysis.iml
 .DS_Store
+*translog*
+*.st
