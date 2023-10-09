@@ -56,7 +56,6 @@ public class MainServlet extends HttpServlet {
         int numFiles = 0;
         File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
         zipToTemp(tempDirectory, filePart);
-
         if(pmdPart != null) {
             toOutput[numFiles] = runFromClassLoader("pmd", filePart, tempDirectory, classArg);
             numFiles++;
@@ -88,10 +87,8 @@ public class MainServlet extends HttpServlet {
             numFiles++;
         }
         if(yascaPart != null) {
-            System.out.println("Starting Yasca");
             File outputFile = File.createTempFile("yascaOutput", ".html");
             String containerName = "yascaContainer";
-            System.out.println("Strings were created");
             String[] dockerRunCommand = {
                     "docker",
                     "run",
@@ -108,10 +105,8 @@ public class MainServlet extends HttpServlet {
                     "/usr/local/tomcat/temp/report.html",
                     "/usr/local/tomcat/temp/" + outputFile.getName()
             };
-            System.out.println("Docker run command : " + Arrays.toString(dockerRunCommand));
             try {
                 synchronized (processLock) {
-                    System.out.println("Running Docker");
                     Process runDocker = new ProcessBuilder(dockerRunCommand).start();
                     runDocker.waitFor();
                     while(true) {
@@ -131,17 +126,14 @@ public class MainServlet extends HttpServlet {
                             builder.append(System.getProperty("line.separator"));
                         }
                         String result = builder.toString();
-                        System.out.println("Docker PS result is: " + result);
                         if (!result.contains(containerName)) {
                             break;
                         }
                     }
-                    System.out.println("Copy File");
                     Process copyDocker = new ProcessBuilder(copyCommand).start();
                     copyDocker.waitFor();
                 }
             } catch (InterruptedException e) {
-                System.out.println("Error");
                 e.printStackTrace();
             }
             toOutput[numFiles] = outputFile;
@@ -155,58 +147,63 @@ public class MainServlet extends HttpServlet {
                     tempSrcDirectory.lastIndexOf(System.getProperty("file.separator"))
             );
             BufferedWriter sonarWriter = new BufferedWriter(new FileWriter(
-                    smallerSrcDir +
-                            System.getProperty("file.separator") +
-                            "sonar-project.properties"
+            smallerSrcDir +
+                    System.getProperty("file.separator") +
+                    "sonar-project.properties"
             ));
             sonarWriter.write("sonar.projectKey=jwave\nsonar.sources=./temp\n");
             sonarWriter.close();
-            String scanMountString = String.format("%s:/usr/src", smallerSrcDir);
+            String containerName = "sonarScanner";
             String[] dockerRunCommand = {
                     "docker",
                     "run",
                     "--rm",
-<<<<<<< HEAD
                     "--network=host",
                     "--name",
                     containerName,
-=======
->>>>>>> parent of 1c54607 (Add sonarqube volumes mount and sonarqube set up)
                     "-e",
                     "SONAR_HOST_URL=http://localhost:9000",
                     "-e",
-                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=jwave-test -Dsonar.java.binaries=.",
+                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=jwave -Dsonar.java.binaries=.",
                     "-e",
-                    "SONAR_TOKEN=sqp_0f6bfcff3568814c33d517060106ca8419102310",
+                    "SONAR_TOKEN=sqp_d40bf6693915b7594100f4fb0bed403922f5d8ef",
                     "-v",
-<<<<<<< HEAD
                     "javasastanalysis_scan-dir:/usr/src",
-=======
-                    scanMountString,
->>>>>>> parent of 1c54607 (Add sonarqube volumes mount and sonarqube set up)
                     "sonarsource/sonar-scanner-cli"
             };
             String[] sonarCurlCommand = {
                     "curl",
                     "-u",
-<<<<<<< HEAD
                     "admin:jwave-admin",
                     "http://sonarqube:9000/api/issues/search?types=BUG"
-=======
-                    "admin:jwave_admin",
-                    "http://localhost:9000/api/issues/search?types=VULNERABILITY"
->>>>>>> parent of 1c54607 (Add sonarqube volumes mount and sonarqube set up)
             };
             try {
                 synchronized (processLock) {
                     ProcessBuilder pb = new ProcessBuilder(dockerRunCommand);
                     pb.redirectErrorStream(true);
-                    Process runDocker = pb.start();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(runDocker.getInputStream()));
-                    String line;
-                    while ((line = reader.readLine()) != null)
-                        System.out.println("SonarQube Docker: " + line);
-                    runDocker.waitFor();
+                    Process dockerRunProcess =  pb.start();
+                    dockerRunProcess.waitFor();
+                    while(true) {
+                        String[] dockerPsCommand = {
+                                "docker",
+                                "ps",
+                                "-a"
+                        };
+                        ProcessBuilder psBuilder = new ProcessBuilder(dockerPsCommand);
+                        BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(psBuilder.start().getInputStream())
+                        );
+                        StringBuilder builder = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            builder.append(line);
+                            builder.append(System.getProperty("line.separator"));
+                        }
+                        String result = builder.toString();
+                        if (!result.contains(containerName)) {
+                            break;
+                        }
+                    }
                     Process sonarCurlProcess = new ProcessBuilder(sonarCurlCommand).redirectOutput(outputFile).start();
                     sonarCurlProcess.waitFor();
                 }
@@ -231,7 +228,6 @@ public class MainServlet extends HttpServlet {
                         program + "_dependencies"
                 )
         );
-        System.out.println(pluginString);
         File[] plugins = new File(pluginString).listFiles(file -> file.getName().endsWith(".jar"));
         assert plugins != null;
         List<URL> urls = new ArrayList<>(plugins.length);
@@ -263,7 +259,7 @@ public class MainServlet extends HttpServlet {
         for(File file: Objects.requireNonNull(tempDirectory.listFiles())) {
             boolean check = file.delete();
             if (!check) {
-                throw new FileNotFoundException();
+                System.out.println(file.getName() + " failed to delete");
             }
         }
         try(ZipInputStream zipInputStream = new ZipInputStream(filePart.getInputStream())) {
@@ -318,7 +314,6 @@ public class MainServlet extends HttpServlet {
         catch(IOException e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(count);
     }
 
     //@SuppressWarnings("unchecked")
