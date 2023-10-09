@@ -3,5 +3,5 @@ target
 JavaSASTAnalysis.iml
 .DS_Store
 **/base/
-**/global/
+**/global/[0-9]*
 **/sonarqubeVolume/
