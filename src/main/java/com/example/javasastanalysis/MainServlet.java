@@ -7,6 +7,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -25,6 +28,7 @@ import java.util.zip.ZipOutputStream;
 public class MainServlet extends HttpServlet {
     static HashMap<String, Class> classes;
     private static final Object processLock = new Object();
+    protected static final Logger logger = LogManager.getLogger();
 
     public void init() {
         classes = new HashMap<>();
@@ -57,17 +61,20 @@ public class MainServlet extends HttpServlet {
         File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
         zipToTemp(tempDirectory, filePart);
         if(pmdPart != null) {
-            toOutput[numFiles] = runFromClassLoader("pmd", filePart, tempDirectory, classArg);
+            logger.info("Beginning PMD Scan");
+            toOutput[numFiles] = runFromClassLoader("pmd", tempDirectory, classArg);
             numFiles++;
         }
         if(findsecuritybugsPart != null) {
-            toOutput[numFiles] = runFromClassLoader("findsecuritybugs", filePart, tempDirectory, classArg);
+            logger.info("Beginning FindSecurityBugs Scan");
+            toOutput[numFiles] = runFromClassLoader("findsecuritybugs", tempDirectory, classArg);
             numFiles++;
         }
         if(semgrepPart != null) {
+            logger.info("Beginning Semgrep Scan");
             File outputFile = File.createTempFile("semgrepOutput", ".xml");
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String[] dockerCommand = {
+            String[] semgrepCommand = {
                     "semgrep",
                     "--config=auto",
                     "--junit-xml",
@@ -77,25 +84,25 @@ public class MainServlet extends HttpServlet {
             };
             try {
                 synchronized (processLock) {
-                    Process process = new ProcessBuilder(dockerCommand).redirectOutput(outputFile).start();
+                    Process process = new ProcessBuilder(semgrepCommand).redirectOutput(outputFile).start();
                     process.waitFor();
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
             toOutput[numFiles] = outputFile;
             numFiles++;
         }
         if(yascaPart != null) {
+            logger.info("Beginning Yasca Scan");
             File outputFile = File.createTempFile("yascaOutput", ".html");
-            String containerName = "yascaContainer";
             String[] dockerRunCommand = {
                     "docker",
                     "run",
                     "-dit",
                     "--rm",
                     "--name",
-                    containerName,
+                    "yascaScanner",
                     "-v",
                     "javasastanalysis_scan-dir:/app/toScan",
                     "makyer19/yasca:jsa"
@@ -106,40 +113,15 @@ public class MainServlet extends HttpServlet {
                     "/usr/local/tomcat/temp/" + outputFile.getName()
             };
             try {
-                synchronized (processLock) {
-                    Process runDocker = new ProcessBuilder(dockerRunCommand).start();
-                    runDocker.waitFor();
-                    while(true) {
-                        String[] dockerPsCommand = {
-                                "docker",
-                                "ps",
-                                "-a"
-                        };
-                        ProcessBuilder psBuilder = new ProcessBuilder(dockerPsCommand);
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(psBuilder.start().getInputStream())
-                        );
-                        StringBuilder builder = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            builder.append(line);
-                            builder.append(System.getProperty("line.separator"));
-                        }
-                        String result = builder.toString();
-                        if (!result.contains(containerName)) {
-                            break;
-                        }
-                    }
-                    Process copyDocker = new ProcessBuilder(copyCommand).start();
-                    copyDocker.waitFor();
-                }
+                runScanFromDocker(dockerRunCommand, copyCommand, "yasca", outputFile);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             toOutput[numFiles] = outputFile;
             numFiles++;
         }
         if(sonarqubePart != null) {
+            logger.info("Beginning Sonarqube Scan");
             File outputFile = File.createTempFile("sonarqubeOutput", ".json");
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
             String smallerSrcDir = tempSrcDirectory.substring(
@@ -153,14 +135,13 @@ public class MainServlet extends HttpServlet {
             ));
             sonarWriter.write("sonar.projectKey=jwave\nsonar.sources=./temp\n");
             sonarWriter.close();
-            String containerName = "sonarScanner";
             String[] dockerRunCommand = {
                     "docker",
                     "run",
                     "--rm",
                     "--network=host",
                     "--name",
-                    containerName,
+                    "sonarScanner",
                     "-e",
                     "SONAR_HOST_URL=http://localhost:9000",
                     "-e",
@@ -178,37 +159,9 @@ public class MainServlet extends HttpServlet {
                     "http://sonarqube:9000/api/issues/search?types=BUG"
             };
             try {
-                synchronized (processLock) {
-                    ProcessBuilder pb = new ProcessBuilder(dockerRunCommand);
-                    pb.redirectErrorStream(true);
-                    Process dockerRunProcess =  pb.start();
-                    dockerRunProcess.waitFor();
-                    while(true) {
-                        String[] dockerPsCommand = {
-                                "docker",
-                                "ps",
-                                "-a"
-                        };
-                        ProcessBuilder psBuilder = new ProcessBuilder(dockerPsCommand);
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(psBuilder.start().getInputStream())
-                        );
-                        StringBuilder builder = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            builder.append(line);
-                            builder.append(System.getProperty("line.separator"));
-                        }
-                        String result = builder.toString();
-                        if (!result.contains(containerName)) {
-                            break;
-                        }
-                    }
-                    Process sonarCurlProcess = new ProcessBuilder(sonarCurlCommand).redirectOutput(outputFile).start();
-                    sonarCurlProcess.waitFor();
-                }
+                runScanFromDocker(dockerRunCommand, sonarCurlCommand, "sonarqube", outputFile);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             toOutput[numFiles] = outputFile;
             numFiles++;
@@ -216,57 +169,30 @@ public class MainServlet extends HttpServlet {
         outputZip(numFiles, toOutput, response);
     }
 
-    private void createClassLoader(String program) throws IOException {
-        String targetString = getServletContext().getRealPath(System.getProperty("file.separator"));
-        targetString = targetString.substring(0, targetString.indexOf("JavaSASTAnalysis"));
-        String pluginString = targetString + String.join(
-                System.getProperty("file.separator"),
-                Arrays.asList(
-                        "JavaSASTAnalysis-1.0-SNAPSHOT",
-                        "WEB-INF",
-                        "classes",
-                        program + "_dependencies"
-                )
-        );
-        File[] plugins = new File(pluginString).listFiles(file -> file.getName().endsWith(".jar"));
-        assert plugins != null;
-        List<URL> urls = new ArrayList<>(plugins.length);
-        for (File plugin : plugins) {
-            urls.add(plugin.toURI().toURL());
-        }
-        URL[] tempUrls = new URL[urls.size()];
-        ClassLoader loader = new URLClassLoader(urls.toArray(tempUrls), this.getClass().getClassLoader());
-        Class runnerClass = null;
-        try {
-            String runnerString = "edu.vt." +
-                    program +
-                    "runner." +
-                    program.substring(0, 1).toUpperCase() +
-                    program.substring(1) +
-                    "Runner";
-            runnerClass = loader.loadClass(runnerString);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        String classname = program + "_class";
-        classes.put(classname, runnerClass);
-    }
-
+    /***
+     * Takes the input zip file and copies the contents to a temporary directory
+     * @param tempDirectory - The temp directory to send the input files to
+     * @param filePart - The zip file sent within the file request
+     * @throws IOException - Occurs if a file cannot be created or the zip file cannot be opened
+     */
     private void zipToTemp(File tempDirectory, Part filePart) throws IOException {
         int count = 0;
         String tempSrcDirectory = tempDirectory.getAbsolutePath();
         Files.createDirectories(Paths.get(tempSrcDirectory));
+        logger.info("Clearing out old input files");
         for(File file: Objects.requireNonNull(tempDirectory.listFiles())) {
             boolean check = file.delete();
             if (!check) {
-                System.out.println(file.getName() + " failed to delete");
+                logger.info(file.getName() + " failed to delete");
             }
         }
         try(ZipInputStream zipInputStream = new ZipInputStream(filePart.getInputStream())) {
+            logger.info("Moving current input files to temp directory");
             ZipEntry entry = zipInputStream.getNextEntry();
             OutputStream outputStream;
             int read;
             byte[] bytes = new byte[1024];
+
             while(entry != null) {
                 String fileName = entry.getName();
                 int isJava = fileName.substring(fileName.length() - 5).compareTo(".java");
@@ -303,8 +229,8 @@ public class MainServlet extends HttpServlet {
                             );
                         }
                     }
-                    catch (FileNotFoundException fnfe){
-                        fnfe.printStackTrace();
+                    catch (FileNotFoundException e){
+                        logger.error(e.getMessage());
                     }
                 }
                 entry = zipInputStream.getNextEntry();
@@ -312,34 +238,18 @@ public class MainServlet extends HttpServlet {
             zipInputStream.closeEntry();
         }
         catch(IOException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 
-    //@SuppressWarnings("unchecked")
-    @SuppressWarnings("all")
-    private File runFromClassLoader(
-            String programName,
-            Part filePart,
-            File tempDirectory,
-            Class[] classArg
-    ) throws IOException {
-        if(!classes.containsKey(String.format("%s_class", programName))) {
-            createClassLoader(programName);
-        }
-        Class runnerClass = classes.get(String.format("%s_class", programName));
-        File outputFile = File.createTempFile(String.format("%sOutput", programName), ".xml");
-        String outputFilePath = outputFile.getAbsolutePath();
-        try {
-            Constructor constructor = runnerClass.getDeclaredConstructor(classArg);
-            constructor.newInstance(tempDirectory.getAbsolutePath(), outputFilePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        outputFile.deleteOnExit();
-        return outputFile;
-    }
-
+    /***
+     * Outputs each file within the output array to a zip file
+     *
+     * @param numFiles - The number of files to send to the output
+     * @param toOutput - The files to output to the user
+     * @param response - The servlet response sent to the user
+     * @throws IOException - Thrown if the output file cannot be found
+     */
     private void outputZip(int numFiles, File[] toOutput, HttpServletResponse response) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(baos);
@@ -358,5 +268,134 @@ public class MainServlet extends HttpServlet {
         zos.close();
         response.getOutputStream().write(baos.toByteArray());
         response.flushBuffer();
+    }
+
+    /***
+     * If a class loader does not exist for the specified program, this function will create that class loader
+     *
+     * @param program - The program whose class loader we are creating
+     *
+     * @throws IOException - Thrown if a file cannot be found to create the class loader
+     */
+    private void createClassLoader(String program) throws IOException {
+        String targetString = getServletContext().getRealPath(System.getProperty("file.separator"));
+        targetString = targetString.substring(0, targetString.indexOf("JavaSASTAnalysis"));
+        String pluginString = targetString + String.join(
+                System.getProperty("file.separator"),
+                Arrays.asList(
+                        "JavaSASTAnalysis-1.0-SNAPSHOT",
+                        "WEB-INF",
+                        "classes",
+                        program + "_dependencies"
+                )
+        );
+        File[] plugins = new File(pluginString).listFiles(file -> file.getName().endsWith(".jar"));
+        assert plugins != null;
+        List<URL> urls = new ArrayList<>(plugins.length);
+        for (File plugin : plugins) {
+            urls.add(plugin.toURI().toURL());
+        }
+        URL[] tempUrls = new URL[urls.size()];
+        ClassLoader loader = new URLClassLoader(urls.toArray(tempUrls), this.getClass().getClassLoader());
+        Class runnerClass = null;
+        try {
+            String runnerString = "edu.vt." +
+                    program +
+                    "runner." +
+                    program.substring(0, 1).toUpperCase() +
+                    program.substring(1) +
+                    "Runner";
+            logger.info("Loading " + runnerString + " class");
+            runnerClass = loader.loadClass(runnerString);
+        } catch (ClassNotFoundException e) {
+            logger.error(e.getMessage());
+        }
+        String classname = program + "_class";
+        classes.put(classname, runnerClass);
+    }
+
+    /***
+     * Runs a scan by utilizing a class loader
+     *
+     * @param programName - The name of the scanner program
+     * @param tempDirectory - The path to the temp directory which contains the input files
+     * @param classArg - An array of class variables that allows the system to get the constructor of the class loader
+     * @return
+     * @throws IOException
+     */
+    @SuppressWarnings("all")
+    private File runFromClassLoader(String programName, File tempDirectory, Class[] classArg) throws IOException {
+        if(!classes.containsKey(String.format("%s_class", programName))) {
+            logger.info(String.format("Creating classloader for %s", programName));
+            createClassLoader(programName);
+        }
+        Class runnerClass = classes.get(String.format("%s_class", programName));
+        File outputFile = File.createTempFile(String.format("%sOutput", programName), ".xml");
+        String outputFilePath = outputFile.getAbsolutePath();
+        try {
+            logger.info(String.format("Beginning %s scan", programName));
+            Constructor constructor = runnerClass.getDeclaredConstructor(classArg);
+            constructor.newInstance(tempDirectory.getAbsolutePath(), outputFilePath);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        outputFile.deleteOnExit();
+        return outputFile;
+    }
+
+    /***
+     * Accepts a docker run command and a command to run after the docker run command.
+     *
+     * @param dockerRunCommand - A string array of the docker run command and its arguments
+     * @param postDockerRunCommand - A string array of commands to execute after the scanner container exits
+     * @param programName - The name of the scanner program
+     * @param outputFile - The file to output the scan results to
+     * @throws IOException - If the ProcessBuilder fails to execute an I/O operation
+     * @throws InterruptedException - If the ProcessBuilder is interrupted before finishing
+     */
+    private void runScanFromDocker(
+            String[] dockerRunCommand,
+            String[] postDockerRunCommand,
+            String programName,
+            File outputFile
+    ) throws IOException, InterruptedException {
+        String containerName = String.format("%sScanner", programName);
+        try {
+            synchronized (processLock) {
+                ProcessBuilder pb = new ProcessBuilder(dockerRunCommand);
+                pb.redirectErrorStream(true);
+                Process dockerRunProcess =  pb.start();
+                dockerRunProcess.waitFor();
+                while(true) {
+                    String[] dockerPsCommand = {
+                            "docker",
+                            "ps",
+                            "-a"
+                    };
+                    ProcessBuilder psBuilder = new ProcessBuilder(dockerPsCommand);
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(psBuilder.start().getInputStream())
+                    );
+                    StringBuilder builder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        builder.append(line);
+                        builder.append(System.getProperty("line.separator"));
+                    }
+                    String result = builder.toString();
+                    if (!result.contains(containerName)) {
+                        break;
+                    }
+                }
+                Process postDockerRunProcess = new ProcessBuilder(postDockerRunCommand).redirectOutput(outputFile).start();
+                postDockerRunProcess.waitFor();
+            }
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+            throw new InterruptedException();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            throw new IOException();
+        }
     }
 }
