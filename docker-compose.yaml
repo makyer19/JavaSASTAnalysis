@@ -7,6 +7,7 @@ services:
     volumes:
       - scan-dir:/usr/local/tomcat/temp
       - //var/run/docker.sock:/var/run/docker.sock
+      - ./config:/usr/local/tomcat/config
   sonarqube:
     image: sonarqube:latest
     restart: unless-stopped

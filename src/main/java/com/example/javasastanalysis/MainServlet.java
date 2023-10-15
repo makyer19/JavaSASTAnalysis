@@ -121,6 +121,20 @@ public class MainServlet extends HttpServlet {
             numFiles++;
         }
         if(sonarqubePart != null) {
+            logger.info("Checking sonar.config is populated");
+            String targetString = getServletContext().getRealPath(System.getProperty("file.separator"));
+            targetString = targetString.substring(0, targetString.indexOf("webapps"));
+            String pluginString = targetString + String.join(
+                    System.getProperty("file.separator"),
+                    Arrays.asList("config", "sonar.config")
+            );
+            Properties prop = new Properties();
+            try (FileInputStream fis = new FileInputStream(pluginString)) {
+                prop.load(fis);
+            } catch (IOException e) {
+                logger.info("Error reading sonar.config file");
+                logger.error(e.getMessage());
+            }
             logger.info("Beginning Sonarqube Scan");
             File outputFile = File.createTempFile("sonarqubeOutput", ".json");
             String tempSrcDirectory = tempDirectory.getAbsolutePath();
@@ -133,7 +147,10 @@ public class MainServlet extends HttpServlet {
                     System.getProperty("file.separator") +
                     "sonar-project.properties"
             ));
-            sonarWriter.write("sonar.projectKey=jwave\nsonar.sources=./temp\n");
+            sonarWriter.write("sonar.projectKey=" +
+                    prop.getProperty("sonar.SONAR_PROJECT_KEY") +
+                    "\nsonar.sources=./temp\n"
+            );
             sonarWriter.close();
             String[] dockerRunCommand = {
                     "docker",
@@ -145,9 +162,11 @@ public class MainServlet extends HttpServlet {
                     "-e",
                     "SONAR_HOST_URL=http://localhost:9000",
                     "-e",
-                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=jwave -Dsonar.java.binaries=.",
+                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=" +
+                            prop.getProperty("sonar.SONAR_PROJECT_KEY") +
+                            " -Dsonar.java.binaries=.",
                     "-e",
-                    "SONAR_TOKEN=sqp_d40bf6693915b7594100f4fb0bed403922f5d8ef",
+                    "SONAR_TOKEN=" + prop.getProperty("sonar.SONAR_PROJECT_TOKEN"),
                     "-v",
                     "javasastanalysis_scan-dir:/usr/src",
                     "sonarsource/sonar-scanner-cli"
@@ -155,7 +174,7 @@ public class MainServlet extends HttpServlet {
             String[] sonarCurlCommand = {
                     "curl",
                     "-u",
-                    "admin:jwave-admin",
+                    "admin:" + prop.getProperty("sonar.SONAR_PASSWORD"),
                     "http://sonarqube:9000/api/issues/search?types=BUG"
             };
             try {
