@@ -148,7 +148,7 @@ public class MainServlet extends HttpServlet {
                     "sonar-project.properties"
             ));
             sonarWriter.write("sonar.projectKey=" +
-                    prop.getProperty("sonar.SONAR_PROJECT_KEY") +
+                    prop.getProperty("SONAR_PROJECT_KEY") +
                     "\nsonar.sources=./temp\n"
             );
             sonarWriter.close();
@@ -163,10 +163,10 @@ public class MainServlet extends HttpServlet {
                     "SONAR_HOST_URL=http://localhost:9000",
                     "-e",
                     "SONAR_SCANNER_OPTS=-Dsonar.projectKey=" +
-                            prop.getProperty("sonar.SONAR_PROJECT_KEY") +
+                            prop.getProperty("SONAR_PROJECT_KEY") +
                             " -Dsonar.java.binaries=.",
                     "-e",
-                    "SONAR_TOKEN=" + prop.getProperty("sonar.SONAR_PROJECT_TOKEN"),
+                    "SONAR_TOKEN=" + prop.getProperty("SONAR_PROJECT_TOKEN"),
                     "-v",
                     "javasastanalysis_scan-dir:/usr/src",
                     "sonarsource/sonar-scanner-cli"
@@ -174,7 +174,7 @@ public class MainServlet extends HttpServlet {
             String[] sonarCurlCommand = {
                     "curl",
                     "-u",
-                    "admin:" + prop.getProperty("sonar.SONAR_PASSWORD"),
+                    "admin:" + prop.getProperty("SONAR_PASSWORD"),
                     "http://sonarqube:9000/api/issues/search?types=BUG"
             };
             try {
