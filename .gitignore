@@ -2,3 +2,8 @@
 target
 JavaSASTAnalysis.iml
 .DS_Store
+volumes/postgresVolume/data
+volumes/sonarqubeVolume/data
+volumes/sonarqubeVolume/conf
+volumes/sonarqubeVolume/lib
+volumes/sonarqubeVolume/extensions
