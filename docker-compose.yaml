@@ -11,6 +11,7 @@ services:
   sonarqube:
     image: sonarqube:latest
     restart: unless-stopped
+    platform: linux/amd64
     environment:
       - SONARQUBE_JDBC_USERNAME=sonarqube
       - SONARQUBE_JDBC_PASSWORD=sonarpass
