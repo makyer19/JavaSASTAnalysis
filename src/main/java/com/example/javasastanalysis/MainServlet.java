@@ -63,11 +63,79 @@ public class MainServlet extends HttpServlet {
         if(pmdPart != null) {
             logger.info("Beginning PMD Scan");
             toOutput[numFiles] = runFromClassLoader("pmd", tempDirectory, classArg);
+            logger.info("Concluded PMD Scan");
             numFiles++;
         }
         if(findsecuritybugsPart != null) {
             logger.info("Beginning FindSecurityBugs Scan");
             toOutput[numFiles] = runFromClassLoader("findsecuritybugs", tempDirectory, classArg);
+            logger.info("Concluded FindSecurityBugs Scan");
+            numFiles++;
+        }
+        if(sonarqubePart != null) {
+            logger.info("Checking sonar.config is populated");
+            String targetString = getServletContext().getRealPath(System.getProperty("file.separator"));
+            targetString = targetString.substring(0, targetString.indexOf("webapps"));
+            String pluginString = targetString + String.join(
+                    System.getProperty("file.separator"),
+                    Arrays.asList("config", "sonar.config")
+            );
+            Properties prop = new Properties();
+            try (FileInputStream fis = new FileInputStream(pluginString)) {
+                prop.load(fis);
+            } catch (IOException e) {
+                logger.info("Error reading sonar.config file");
+                logger.error(e.getMessage());
+            }
+            logger.info("Beginning Sonarqube Scan");
+            File outputFile = File.createTempFile("sonarqubeOutput", ".json");
+            String tempSrcDirectory = tempDirectory.getAbsolutePath();
+            String smallerSrcDir = tempSrcDirectory.substring(
+                    0,
+                    tempSrcDirectory.lastIndexOf(System.getProperty("file.separator"))
+            );
+            BufferedWriter sonarWriter = new BufferedWriter(new FileWriter(
+                    smallerSrcDir +
+                            System.getProperty("file.separator") +
+                            "sonar-project.properties"
+            ));
+            sonarWriter.write("sonar.projectKey=" +
+                    prop.getProperty("SONAR_PROJECT_KEY") +
+                    "\nsonar.sources=./temp\nsonar.exclusions=**/*.html\n"
+            );
+            sonarWriter.close();
+            String[] dockerRunCommand = {
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--network=host",
+                    "--name",
+                    "sonarScanner",
+                    "-e",
+                    "SONAR_HOST_URL=http://localhost:9000",
+                    "-e",
+                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=" +
+                            prop.getProperty("SONAR_PROJECT_KEY") +
+                            " -Dsonar.java.binaries=.",
+                    "-e",
+                    "SONAR_TOKEN=" + prop.getProperty("SONAR_PROJECT_TOKEN"),
+                    "-v",
+                    "javasastanalysis_scan-dir:/usr/src",
+                    "sonarsource/sonar-scanner-cli"
+            };
+            String[] sonarCurlCommand = {
+                    "curl",
+                    "-u",
+                    "admin:" + prop.getProperty("SONAR_PASSWORD"),
+                    "http://sonarqube:9000/api/issues/search?types=VULNERABILITY"
+            };
+            try {
+                runScanFromDocker(dockerRunCommand, sonarCurlCommand, "sonarqube", outputFile);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            logger.info("Concluded SonarQube Scan");
+            toOutput[numFiles] = outputFile;
             numFiles++;
         }
         if(semgrepPart != null) {
@@ -90,6 +158,7 @@ public class MainServlet extends HttpServlet {
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
+            logger.info("Concluded Semgrep Scan");
             toOutput[numFiles] = outputFile;
             numFiles++;
         }
@@ -117,71 +186,7 @@ public class MainServlet extends HttpServlet {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            toOutput[numFiles] = outputFile;
-            numFiles++;
-        }
-        if(sonarqubePart != null) {
-            logger.info("Checking sonar.config is populated");
-            String targetString = getServletContext().getRealPath(System.getProperty("file.separator"));
-            targetString = targetString.substring(0, targetString.indexOf("webapps"));
-            String pluginString = targetString + String.join(
-                    System.getProperty("file.separator"),
-                    Arrays.asList("config", "sonar.config")
-            );
-            Properties prop = new Properties();
-            try (FileInputStream fis = new FileInputStream(pluginString)) {
-                prop.load(fis);
-            } catch (IOException e) {
-                logger.info("Error reading sonar.config file");
-                logger.error(e.getMessage());
-            }
-            logger.info("Beginning Sonarqube Scan");
-            File outputFile = File.createTempFile("sonarqubeOutput", ".json");
-            String tempSrcDirectory = tempDirectory.getAbsolutePath();
-            String smallerSrcDir = tempSrcDirectory.substring(
-                    0,
-                    tempSrcDirectory.lastIndexOf(System.getProperty("file.separator"))
-            );
-            BufferedWriter sonarWriter = new BufferedWriter(new FileWriter(
-            smallerSrcDir +
-                    System.getProperty("file.separator") +
-                    "sonar-project.properties"
-            ));
-            sonarWriter.write("sonar.projectKey=" +
-                    prop.getProperty("SONAR_PROJECT_KEY") +
-                    "\nsonar.sources=./temp\n"
-            );
-            sonarWriter.close();
-            String[] dockerRunCommand = {
-                    "docker",
-                    "run",
-                    "--rm",
-                    "--network=host",
-                    "--name",
-                    "sonarScanner",
-                    "-e",
-                    "SONAR_HOST_URL=http://localhost:9000",
-                    "-e",
-                    "SONAR_SCANNER_OPTS=-Dsonar.projectKey=" +
-                            prop.getProperty("SONAR_PROJECT_KEY") +
-                            " -Dsonar.java.binaries=.",
-                    "-e",
-                    "SONAR_TOKEN=" + prop.getProperty("SONAR_PROJECT_TOKEN"),
-                    "-v",
-                    "javasastanalysis_scan-dir:/usr/src",
-                    "sonarsource/sonar-scanner-cli"
-            };
-            String[] sonarCurlCommand = {
-                    "curl",
-                    "-u",
-                    "admin:" + prop.getProperty("SONAR_PASSWORD"),
-                    "http://sonarqube:9000/api/issues/search?types=BUG"
-            };
-            try {
-                runScanFromDocker(dockerRunCommand, sonarCurlCommand, "sonarqube", outputFile);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            logger.info("Concluded Yasca Scan");
             toOutput[numFiles] = outputFile;
             numFiles++;
         }
@@ -220,10 +225,10 @@ public class MainServlet extends HttpServlet {
                     count = count + 1;
                     File newInputFile;
                     if(isJava == 0) {
-                        newInputFile = File.createTempFile("input", ".java");
+                        newInputFile = File.createTempFile(fileName, ".java");
                     }
                     else {
-                        newInputFile = File.createTempFile("input", ".class");
+                        newInputFile = File.createTempFile(fileName, ".class");
                     }
                     try {
                         outputStream = new FileOutputStream(newInputFile);
@@ -384,6 +389,9 @@ public class MainServlet extends HttpServlet {
                 ProcessBuilder pb = new ProcessBuilder(dockerRunCommand);
                 pb.redirectErrorStream(true);
                 Process dockerRunProcess =  pb.start();
+                if(programName.equals("sonar")) {
+                    dockerRunProcess.getInputStream().close();
+                }
                 dockerRunProcess.waitFor();
                 while(true) {
                     String[] dockerPsCommand = {

@@ -1,4 +1,4 @@
-FROM tomcat:10
+FROM tomcat:10.0
 
 COPY ./target/JavaSASTAnalysis-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/
 
