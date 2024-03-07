@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<form action="http://localhost:8080/main-servlet" method="post" enctype="multipart/form-data">
+  <input type="checkbox" id="pmd" name="pmd" value="pmd">
+  <label for="pmd">PMD</label><br>
+  <input type="checkbox" id="findsecuritybugs" name="findsecuritybugs" value="findsecuritybugs">
+  <label for="findsecuritybugs">Find Security Bugs</label><br>
+  <input type="checkbox" id="semgrep" name="semgrep" value="semgrep">
+  <label for="semgrep">Semgrep</label><br>
+  <input type="checkbox" id="yasca" name="yasca" value="yasca">
+  <label for="yasca">Yasca</label><br>
+  <input type="checkbox" id="sonarqube" name="sonarqube" value="sonarqube">
+  <label for="sonarqube">SonarQube</label><br>
+  Select file to upload:
+  <input type="file" name="file" id="file">
+  <input type="submit" value="Upload Files" name="submit">
+</form>
+
+</body>
+</html>
