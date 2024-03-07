@@ -1,7 +1,7 @@
 version: "3"
 services:
-  javasastanalysis:
-    image: makyer19/javasastanalysis:latest
+  jwave:
+    image: makyer19/jwave:latest
     ports:
       - "8080:8080"
     volumes:
@@ -9,7 +9,7 @@ services:
       - //var/run/docker.sock:/var/run/docker.sock
       - ./config:/usr/local/tomcat/config
   sonarqube:
-    image: sonarqube:latest
+    image: sonarqube:9.9.4-community
     restart: unless-stopped
     platform: linux/amd64
     environment:
