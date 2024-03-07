@@ -1,0 +1,27 @@
+Users should reference this guide for instruction on how to setup and run J-WAVE. The program has been tested on both a Windows machine and a Macbook running with an M1 chip. It is required that Git and Docker are both installed prior to running J-WAVE. It is also important to ensure that ports 8080, 9090, and 9092 are not actively being utilized by other services.
+
+Basic Utilization:
+Begin by cloning the J-WAVE repository from GitHub using the command and changing into the cloned directory.
+
+$ git clone https://github.com/makyer19/jwave
+$ cd jwave
+
+Once the repository is cloned, it can be ran from the J-WAVE directory with the following command.
+
+$ docker compose up -d
+
+This command will start up the J-WAVE container as well as the SonarQube host and PostgreSQL containers. It may take a few minutes for the SonarQube container to start up, so any scans should wait until that concludes.
+
+After the containers are running, users can now POST ZIP archives to the /main-servlet endpoint. As mentioned before, these ZIP archives should contain JAVA source code files as well as their compiled CLASS byte code files. Any other files will be ignored. To POST files the developers utilized the curl command. Here is an example below. Note that users should replace /Users/myuser.inputFiles.zip with the path to their directory.
+
+$ curl -F pmd=true -F file=@/Users/myuser/inputFiles.zip --output output.zip http://localhost:8080/main-servlet
+
+The above command will POST the inputFiles.zip archive to the servlet. The servlet will then scan the files with PMD, and return output.zip which contains the scan report. In order to run each tool, they will need to be specified as they are in the below command.
+
+$ curl -F pmd=true -F findsecuritybugs=true -F semgrep=true -F yasca=true -F sonarqube=true -F file=@/Users/MyUser/inputFiles.zip --output output.zip http://localhost:8080/main-servlet
+
+There are other methods for sending data, this is just the method utilized by the developer. After the POST request is sent, each scan will occur sequentially. Once the archive of reports are returned, they can be parsed individually as the user would like. There are Python scripts found within the repository that users might find helpful in sending a POST request and parsing the output files. Example commands to run those files can be found as comments within themselves.
+
+The reports can be then accessed from the directory in which POST request was sent. A file named output.zip will include one report file for each SAST tool run within J-WAVE. After these files are extracted, their contents can be observed. As it currently stands, the file formats returned are XML, JSON, and HTML. Each report will contain a parsable list of code smells, bugs, and vulnerabilities except for SonarQube's report which contains only vulnerabilities. It is up to the individual on how to best interpret these reports. As a starting point, a collection of scripts are provided in the Git repository which extract the name and number of occurrences of all vulnerabilities found within the report. Each tool's report format is different, so one script is provided for each tool. The scripts can be run with the below command structure.
+
+$ python <SCRIPT NAME> <REPORT FILE NAME>
