@@ -61,6 +61,7 @@ public class DockerScanner extends AbstractScanner {
                         break;
                     }
                 }
+                TimeUnit.SECONDS.sleep(30);
                 Process postDockerRunProcess = new ProcessBuilder(postDockerRunCommand).redirectOutput(outputFile).start();
                 postDockerRunProcess.waitFor();
             }
