@@ -53,7 +53,7 @@ public class SonarqubeScanner extends DockerScanner {
                 "--rm",
                 "--network=host",
                 "--name",
-                "sonarScanner",
+                "sonarqubeScanner",
                 "-e",
                 "SONAR_HOST_URL=http://localhost:9000",
                 "-e",
