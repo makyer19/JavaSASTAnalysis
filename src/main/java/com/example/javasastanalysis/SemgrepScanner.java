@@ -13,7 +13,7 @@ public class SemgrepScanner extends ProcessScanner {
                 "--junit-xml",
                 "--include=*.java",
                 "--dryrun",
-                getFileManager().getServletPath()
+                getFileManager().getSourceDirectory()
         };
         File outputFile = File.createTempFile(String.format("%sOutput", getProgramName()), ".xml");
         runScanFromProcess(semgrepCommand, outputFile);
