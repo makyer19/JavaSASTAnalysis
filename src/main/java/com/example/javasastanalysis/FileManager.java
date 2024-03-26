@@ -62,12 +62,14 @@ public class FileManager {
 
             while(entry != null) {
                 String fileName = entry.getName();
-                int isJava = fileName.substring(fileName.length() - 5).compareTo(".java");
-                if(fileName.length() > 5 && (isJava == 0
-                        || fileName.substring(fileName.length() - 6).compareTo(".class") == 0)) {
+                boolean isJava = fileName.substring(fileName.length() - 5).compareTo(".java") == 0;
+                if(fileName.length() > 5 &&
+                        (isJava || fileName.substring(fileName.length() - 6).compareTo(".class") == 0) &&
+                        !fileName.startsWith("._")
+                ) {
                     count = count + 1;
                     File newInputFile;
-                    if(isJava == 0) {
+                    if(isJava) {
                         newInputFile = File.createTempFile(fileName, ".java");
                     }
                     else {
@@ -79,22 +81,13 @@ public class FileManager {
                             outputStream.write(bytes, 0 , read);
                         }
                         newInputFile.deleteOnExit();
-                        if(isJava == 0) {
-                            Files.move(
-                                    Paths.get(newInputFile.getAbsolutePath()),
-                                    Paths.get(tempSrcDirectory +
-                                            System.getProperty("file.separator") +
-                                            newInputFile.getName())
-                            );
-                        }
-                        else {
-                            Files.move(Paths.get(
-                                            newInputFile.getAbsolutePath()),
-                                    Paths.get(sourceDirectory.getAbsolutePath() +
-                                            System.getProperty("file.separator") +
-                                            newInputFile.getName())
-                            );
-                        }
+                        Files.move(
+                            Paths.get(newInputFile.getAbsolutePath()),
+                            Paths.get(
+                                    tempSrcDirectory +
+                                    System.getProperty("file.separator") +
+                                    newInputFile.getName())
+                        );
                     }
                     catch (FileNotFoundException e){
                         MainServlet.logger.error(e.getMessage());
