@@ -61,7 +61,9 @@ public class DockerScanner extends AbstractScanner {
                         break;
                     }
                 }
-                TimeUnit.SECONDS.sleep(30);
+                if(programName.equals("sonarqube")) {
+                    TimeUnit.SECONDS.sleep(180);
+                }
                 Process postDockerRunProcess = new ProcessBuilder(postDockerRunCommand).redirectOutput(outputFile).start();
                 postDockerRunProcess.waitFor();
             }
