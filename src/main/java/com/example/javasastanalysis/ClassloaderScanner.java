@@ -12,6 +12,12 @@ import java.util.List;
 public class ClassloaderScanner extends AbstractScanner {
     private Class[] classArg = new Class[2];
 
+    /**
+     * ClassloaderScanner constructor
+     *
+     * @param programName - The name of the scanner program
+     * @param fileManager - A reference to the global FileManager
+     */
     public ClassloaderScanner(String programName, FileManager fileManager) {
         super(programName, fileManager);
         classArg[0] = String.class;
@@ -65,15 +71,12 @@ public class ClassloaderScanner extends AbstractScanner {
     /***
      * Runs a scan by utilizing a class loader
      *
-     * @param programName - The name of the scanner program
-     * @param tempDirectory - The path to the temp directory which contains the input files
-     * @param classArg - An array of class variables that allows the system to get the constructor of the class loader
-     * @return
-     * @throws IOException
      */
     @SuppressWarnings("all")
-    protected void runFromClassLoader(String programName) throws IOException {
+    @Override
+    public void run() throws IOException {
         logStart();
+        String programName = getProgramName();
         if(!MainServlet.classes.containsKey(String.format("%s_class", programName))) {
             logger.info(String.format("Creating classloader for %s", programName));
             createClassLoader(programName);

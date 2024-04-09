@@ -6,9 +6,49 @@ import java.util.Properties;
 
 public class SonarqubeScanner extends DockerScanner {
 
+    /**
+     * SonarqubeScanner constructor
+     *
+     * @param fileManager - A reference to the global FileManager
+     * @throws IOException - If the ProcessBuilder fails to execute an I/O operation
+     */
     public SonarqubeScanner(FileManager fileManager) throws IOException {
-        super("sonarqube", fileManager);
-        runSonar(setupSonarConfigAndProperties());
+        super("sonarqube", fileManager, null, null, null);
+        Properties prop = setupSonarConfigAndProperties();
+        File outputFile = File.createTempFile("sonarqubeOutput", ".json");
+        String[] dockerRunCommand = {
+                "docker",
+                "run",
+                "--rm",
+                "--network=host",
+                "--name",
+                "sonarqubeScanner",
+                "-e",
+                "SONAR_HOST_URL=http://localhost:9000",
+                "-e",
+                "SONAR_SCANNER_OPTS=-Dsonar.projectKey=" +
+                        prop.getProperty("SONAR_PROJECT_KEY") +
+                        " -Dsonar.java.binaries=.",
+                "-e",
+                "SONAR_TOKEN=" + prop.getProperty("SONAR_PROJECT_TOKEN"),
+                "-v",
+                "javasastanalysis_scan-dir:/usr/src",
+                "sonarsource/sonar-scanner-cli"
+        };
+        String[] sonarCurlCommand = {
+                "curl",
+                "-u",
+                "admin:" + prop.getProperty("SONAR_PASSWORD"),
+                "http://sonarqube:9000/api/issues/search?types=VULNERABILITY"
+        };
+        this.dockerRunCommand = dockerRunCommand;
+        this.postDockerRunCommand = sonarCurlCommand;
+        this.outputFile = outputFile;
+        try {
+            run();
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Properties setupSonarConfigAndProperties() throws IOException {
@@ -43,39 +83,5 @@ public class SonarqubeScanner extends DockerScanner {
         );
         sonarWriter.close();
         return(prop);
-    }
-
-    private void runSonar(Properties prop) throws IOException {
-        File outputFile = File.createTempFile("sonarqubeOutput", ".json");
-        String[] dockerRunCommand = {
-                "docker",
-                "run",
-                "--rm",
-                "--network=host",
-                "--name",
-                "sonarqubeScanner",
-                "-e",
-                "SONAR_HOST_URL=http://localhost:9000",
-                "-e",
-                "SONAR_SCANNER_OPTS=-Dsonar.projectKey=" +
-                        prop.getProperty("SONAR_PROJECT_KEY") +
-                        " -Dsonar.java.binaries=.",
-                "-e",
-                "SONAR_TOKEN=" + prop.getProperty("SONAR_PROJECT_TOKEN"),
-                "-v",
-                "javasastanalysis_scan-dir:/usr/src",
-                "sonarsource/sonar-scanner-cli"
-        };
-        String[] sonarCurlCommand = {
-                "curl",
-                "-u",
-                "admin:" + prop.getProperty("SONAR_PASSWORD"),
-                "http://sonarqube:9000/api/issues/search?types=VULNERABILITY"
-        };
-        try {
-            runScanFromDocker(dockerRunCommand, sonarCurlCommand, "sonarqube", outputFile);
-        } catch (InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

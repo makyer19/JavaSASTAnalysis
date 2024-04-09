@@ -7,27 +7,33 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 public class DockerScanner extends AbstractScanner {
+    protected String[] dockerRunCommand;
+    protected String[] postDockerRunCommand;
+    protected File outputFile;
 
-    public DockerScanner(String programName, FileManager fileManager) {
+    /**
+     * Constructor for DockerScanner
+     *
+     * @param programName - The name of the scanner program
+     * @param fileManager - A reference to the global FileManager
+     * @param dockerRunCommand - A string array of the docker run command and its arguments
+     * @param postDockerRunCommand - A string array of commands to execute after the scanner container exits
+     * @param outputFile - The file to output the scan results to
+     */
+    public DockerScanner(String programName, FileManager fileManager, String[] dockerRunCommand, String[] postDockerRunCommand, File outputFile) {
         super(programName, fileManager);
+        this.dockerRunCommand = dockerRunCommand;
+        this.postDockerRunCommand = postDockerRunCommand;
+        this.outputFile = outputFile;
     }
 
     /***
-     * Accepts a docker run command and a command to run after the docker run command.
+     * Accepts a docker run command and a command to run after the docker run commandd
      *
-     * @param dockerRunCommand - A string array of the docker run command and its arguments
-     * @param postDockerRunCommand - A string array of commands to execute after the scanner container exits
-     * @param programName - The name of the scanner program
-     * @param outputFile - The file to output the scan results to
      * @throws IOException - If the ProcessBuilder fails to execute an I/O operation
-     * @throws InterruptedException - If the ProcessBuilder is interrupted before finishing
      */
-    public void runScanFromDocker(
-            String[] dockerRunCommand,
-            String[] postDockerRunCommand,
-            String programName,
-            File outputFile
-    ) throws IOException, InterruptedException {
+    public void run() throws IOException, InterruptedException {
+        String programName = getProgramName();
         String containerName = String.format("%sScanner", programName);
         logStart();
         try {

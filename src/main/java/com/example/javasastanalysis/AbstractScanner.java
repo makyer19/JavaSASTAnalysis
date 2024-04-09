@@ -3,7 +3,9 @@ package com.example.javasastanalysis;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class AbstractScanner {
+import java.io.IOException;
+
+public abstract class AbstractScanner {
     private static String programName;
     protected static final Logger logger = LogManager.getLogger();
     private final FileManager fileManager;
@@ -34,4 +36,6 @@ public class AbstractScanner {
                 Character.toUpperCase(programName.charAt(0)) + programName.substring(1)
         ));
     }
+
+    public abstract void run() throws IOException, InterruptedException;
 }
