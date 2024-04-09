@@ -2,6 +2,7 @@ version: "3"
 services:
   jwave:
     image: makyer19/jwave:latest
+    platform: linux/amd64
     ports:
       - "8080:8080"
     volumes:
@@ -27,6 +28,7 @@ services:
   db:
     image: makyer19/sonar-postgresql:latest
     restart: unless-stopped
+    platform: linux/amd64
     environment:
       - POSTGRES_USER=sonarqube
       - POSTGRES_PASSWORD=sonarpass
